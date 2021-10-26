@@ -1,0 +1,11 @@
+.sidebar {
+    padding: 58px 0 0; /* Height of navbar */
+    box-shadow: 0 2px 5px 0 rgb(0 0 0 / 5%), 0 2px 10px 0 rgb(0 0 0 / 5%);
+    z-index: 600;
+    grid-area: nav;
+}
+#parent{
+    display: grid;
+    grid-template-columns: 20vw 80vw;
+    grid-template-areas: "nav main";
+}

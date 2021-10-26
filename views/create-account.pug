@@ -1,0 +1,15 @@
+include layout 
+link(rel="stylesheet" href="/stylesheets/create-account.css")
+block content
+    .center-main
+        .create-account
+            form.row.g-3(action="/create-account" method="post")
+                .col-md-12
+                    input.form-control(type="email" name="email" placeholder="user@email.com")
+                .col-md-6
+                    input.form-control(type="text" name="firstName" placeholder="First Name")
+                .col-md-6
+                    input.form-control(type="text" name="lastName" placeholder="Last Name")
+                .col-md-12
+                    input.form-control(type="password" name="password" placeholder="********")
+                button.btn.btn-block.btn-primary(type="submit") Create

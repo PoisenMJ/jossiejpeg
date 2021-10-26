@@ -1,0 +1,122 @@
+include layout 
+link(rel="stylesheet", href="/stylesheets/message.css")
+body
+    #parent
+        nav#sidebarMenu.collapse.d-lg-block.sidebar.collapse.bg-white
+            .position-sticky
+                .list-group.list-group-flush.mx-3.mt-4
+                    a.list-group-item.list-group-item-action.py-2.ripple(href='/home')
+                        i.fa.fa-home.fa-fw.me-3
+                        span Home
+                    a.list-group-item.list-group-item-action.py-2.ripple.active(href='/message')
+                        i.fa.fa-envelope.fa-fw.me-3
+                        span Message
+                    a.list-group-item.list-group-item-action.py-2.ripple(href='/profile')
+                        i.fa.fa-user.fa-fw.me-3
+                        span Profile
+
+        .messaging
+            .messaging-header
+                .header-content
+                    img.header-profile-image(src="/images/pfp.jpg")
+                    span.fw-normal.fs-4 Jossie.JPEG
+                .header-actions
+                    button.btn-primary.btn Send Tip
+                        i.fa.fa-money(style="padding-left:10px")
+            .message-box
+                each message in messages
+                    if message.style == "outgoing"
+                        .outgoing-message
+                            span.outgoing-user=message.from
+                            .outgoing-message-content
+                                img.outgoing-user-img(src=message.image)
+                                if message.content
+                                    span.outgoing-text-box=message.content
+                                else if message.imageContent
+                                    img.outgoing-img-content(src=message.imageContent)
+                                .outgoing-info
+                                    span=message.date
+                    else
+                        .incoming-message
+                            span.incoming-user=message.from
+                            .incoming-message-content
+                                img.incoming-user-img(src=message.image)
+                                if message.content
+                                    span.incoming-text-box=message.content
+                                else if message.imageContent
+                                    img.incoming-img-content(src=message.imageContent)
+                                .incoming-info
+                                    span=message.date
+            .send-message
+                form#formMessage
+                    .input-group
+                        span.input-group-text#attachment
+                            i.fa.fa-paperclip
+                        input.form-control#message(type="text" placeholder="Send message..." aria-label="Message box" aria-describedby="sendMessage" name="message")
+                        input.visually-hidden#imageInput(type="file" name="image")
+                        button.btn.btn-primary#sendMessage(type="submit") Send
+    script(src="/javascripts/socket.io.js")
+    script.
+        var attachment = document.getElementById("attachment");
+        var imageInput = document.getElementById("imageInput");
+        attachment.addEventListener('click', () => imageInput.click());
+        imageInput.addEventListener('change', (event) => {
+            document.getElementById('message').value = imageInput.files[0].name;
+            document.getElementById('message').disabled = true;
+        })
+
+        function addMessage(type, username, message, date, image){
+            var msg = document.createElement('div');
+            msg.classList.add(type+'-message');
+            var user = document.createElement("span");
+            user.classList.add(type+"-user");
+            user.innerHTML = username;
+            msg.appendChild(user);
+            var msgContent = document.createElement("div");
+            msgContent.classList.add(type+"-message-content");
+            var img = document.createElement("img");
+            img.src = image;
+            img.classList.add(type+"-user-img");
+            msgContent.appendChild(img);
+            var text = document.createElement("span");
+            text.classList.add(type+"-text-box");
+            text.innerHTML = message;
+            msgContent.appendChild(text);
+            var info = document.createElement("span");
+            info.classList.add(type+"-info");
+            info.innerHTML = date;
+            msgContent.appendChild(info);
+            msg.appendChild(msgContent);
+            document.getElementsByClassName("message-box")[0].appendChild(msg);
+        }
+
+        var socket = io.connect("localhost:3000");
+        var input = document.getElementById("message");
+        var form = document.getElementById("formMessage");
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if(input.value){
+                var f = document.getElementById('imageInput').files[0];
+                var formData = new FormData();
+                formData.append('image', f);
+                formData.append('content', input.value);
+                fetch('/message', {
+                    method: 'POST',
+                    body: formData,
+                    headers:{"Accept": "application/json"}
+                }).then(res => res.json()).then(data => {
+                    console.log(data);
+                    if(!data.error){
+                        input.value = '';
+                        addMessage(data.style, data.from, data.content, data.date, data.image);
+                    }
+                });
+
+            }
+            //- socket.emit('chat message', {content: input.value, user: "Jossie", image: "/images/pfp.jpg", info: "10:24 AM"});
+        });
+
+        socket.on('chat message', (msg) => {
+            console.log(msg);
+        })
+        
