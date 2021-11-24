@@ -5,7 +5,6 @@ const uniqueKeyGen = require('mongoose-generate-unique-key');
 const userSchema = new mongoose.Schema({
     email: {
         type: String,
-        index: { unique: true }
     },
     password: String,
     firstName: String,
@@ -21,7 +20,12 @@ const userSchema = new mongoose.Schema({
     },
     image: {
         type: String,
+        default: 'default.jpg',
         required: true
+    },
+    customerID: {
+        type: String,
+        index: { unique: true }
     }
 });
 

@@ -1,4 +1,5 @@
 var mongoose = require('mongoose');
+var {commentSchema} = require('./comment');
 
 var postSchema = new mongoose.Schema({
     datePosted: {
@@ -13,10 +14,13 @@ var postSchema = new mongoose.Schema({
         required: true
     },
     likes: {
-        type: Number,
-        default: 0
+        type: [String],
+        default: []
     },
-    // COMMENTS
+    comments: {
+        type: [commentSchema],
+        default: []
+    }
 });
 
 var Post = mongoose.model('post', postSchema);

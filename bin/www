@@ -6,7 +6,7 @@
 
 var app = require('../app');
 var debug = require('debug')('jossiejpeg:server');
-var http = require('http');
+var http = require('http');  
 
 /**
  * Get port from environment and store in Express.
@@ -23,12 +23,13 @@ var server = http.createServer(app);
 
 
 var { Server } = require('socket.io');
-var io = new Server(server);
+var io = new Server(server, { cors: true });
 
 io.on('connection', (socket) => {
   console.log('a user is connected');
   socket.on('chat message', (msg) => {
-    socket.emit('chat message', msg);
+    console.log('chat message');
+    socket.broadcast.emit('chat message', msg);
   })
 })
 
@@ -36,7 +37,7 @@ io.on('connection', (socket) => {
 /**
  * Listen on provided port, on all network interfaces.
  */
-
+console.log("LISTENING ON PORT:"+port);
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);

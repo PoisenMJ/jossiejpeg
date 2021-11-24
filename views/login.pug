@@ -2,8 +2,8 @@ include layout.pug
     link(rel="stylesheet" href="/stylesheets/login.css")
 body
     div.parent
-        img.display-image(src="/images/jossie_1.jpg")
-        div.center-box
+        img.display-image#img1(src="/images/jossie_1.jpg")
+        div.center-box#signin
             div.mb-5
                 span.text-black.fs-1.fw-lighter Jossie
                 span.fs-1.fw-light  . 
@@ -11,8 +11,8 @@ body
             .mb-4
                 legend.mb-3 Sign In
                 form(action="/login" method="post")
-                    input.form-control(name='email' type='email' placeholder='user@email.com')
-                    input.form-control.mb-3(name='password' type='password' placeholder='password')
+                    input.form-control.mb-2(name='email' type='email' placeholder='user@email.com')
+                    input.form-control.mb-5(name='password' type='password' placeholder='password')
                     input.btn.btn-primary.mb-2.w-100(type='submit' value='Login')
             div
                 span.text-muted Don't have an account?
@@ -24,4 +24,4 @@ body
             //- button() Login with Google
             //-     div
             //-         hr
-        img.display-image(src="/images/jossie_2.jpg")
+        img.display-image#img2(src="/images/jossie_2.jpg")

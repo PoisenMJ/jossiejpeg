@@ -4,6 +4,10 @@ var messageSchema = mongoose.Schema({
     content: {
         type: String
     },
+    type:{
+        type: String,
+        default: "message"
+    },
     imageContent: {
         type: String
     },

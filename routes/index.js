@@ -5,13 +5,13 @@ const passport = require('passport');
 const Post = require('../models/post');
 const User = require('../models/user');
 const Message = require('../models/message');
+const {Comment} = require('../models/comment');
 var io = require('socket.io')();
 var router = express.Router();
 var fs = require('fs');
 var config = require('../config.json');
+var authCheck = (config.DEVELOPMENT) ? development : isAuthenticated;
 
-var authCheck = (config.development) ? (req, res, next) => next() : isAuthenticated;
-var adminCheck = (config.development) ? (req, res, next) => next() : isAdmin;
 
 var multer = require('multer');
 var storage = multer.diskStorage({
@@ -24,18 +24,14 @@ var storage = multer.diskStorage({
 })
 var upload = multer({ storage: storage });
 
+function development(req, res, next){
+  return next();
+}
 function isAuthenticated(req, res, next){
+  console.log('auth check');
   if(!req.user) return res.redirect('/login');
   next();
 }
-function isAdmin(req, res, next){
-  console.log(req.user);
-  if(req.user){
-    if(req.user.role === "admin") return next();
-  }
-  return res.redirect('/login');
-}
-
 
 /* GET home page. */
 router.get('/login', function(req, res, next) {
@@ -46,7 +42,8 @@ router.post('/login', function(req, res, next) {
     if(err) return res.redirect('/login');
     if(!user) return res.redirect('/login');
     req.login(user, (err) => {
-      return res.redirect('/home');
+      if(user.role == "admin") return res.redirect('/admin/upload');
+      else return res.redirect('/home'); 
     })
   })(req, res, next);
 });
@@ -66,65 +63,86 @@ router.post('/create-account', (req, res, next) => {
     if(err) res.redirect('/create-account');
     else res.redirect('/login');
   });
+});
 
+router.get('/signout', function (req, res, next){
+  
 })
-
-router.get('/upload', adminCheck, function(req, res, next) {
-  res.sendFile('dist/index.html', { root: process.cwd() });
-});
-
-router.post('/upload', upload.any('content'), function(req, res, next) {
-  var fileNames = [];
-  console.log(req.body);
-  console.log(req.files);
-  for(let i = 0; i < req.files.length; i++){
-    fileNames.push(req.files[i].filename);
-  }
-  var d = new Date();
-  var newPost = new Post({
-    datePosted: d.getDate()+'/'+d.getMonth()+'/'+d.getFullYear(),
-    description: req.body.description,
-    content: fileNames
-  });
-  newPost.save((err, post) => {
-    if(err) return err;
-    return res.json(post);
-  })
-});
 
 // GET: POSTS
 // return all posts
 router.get('/posts', authCheck, function(req, res, next) {
   Post.find({}, (err, posts) => {
     if(err) return err;
+    for(let post in posts){
+      if(posts[post].likes.includes("maksjl01")) posts[post]._doc.liked = true;
+      else posts[post]._doc.liked = false;
+    }
     return res.json({ posts: posts });
   })
 });
 
-router.post('/removePost', adminCheck, function(req, res, next) {
-  Post.findByIdAndRemove({ _id: req.body.id }, (err, post) => {
+router.get('/home', authCheck, function(req, res, next) {
+  res.sendFile('dist/index.html', { root: process.cwd() });
+});
+router.post('/home/like', authCheck, function(req, res, next){
+  var id = req.body.postID;
+  console.log(req.body);
+  Post.findOneAndUpdate({ _id: id }, { $addToSet: { likes: "maksjl01" }}, (err, post) => {
     if(err) console.log(err);
     console.log(post);
     return res.json({ success: true });
   })
-})
-
-router.get('/home', authCheck, function(req, res, next) {
-  res.sendFile('dist/index.html', { root: process.cwd() });
 });
-
+router.post('/home/unlike', authCheck, function(req, res, next) {
+  var id = req.body.postID;
+  // chgange to req.user.username instead when not development
+  Post.findOneAndUpdate({ _id: id }, { $pull : { likes: "maksjl01"}}, (err, post) => {
+    if(err) console.log(err);
+    console.log(post);
+    return res.json({ success: true });
+  })
+});
+router.post('/home/comment', authCheck, function(req, res, next) {
+  var id = req.body.postID, content = req.body.comment, date = new Date().toString();
+  var user = (development) ? "maksjl01" : req.user.username;
+  console.log(content);
+  var comment = new Comment({
+    user: user,
+    content: content,
+    date: date,
+    postID: id
+  });
+  comment.save((err, c) => {
+    if(err) return res.json({ success: false }).status(400);
+    console.log(comment);
+    Post.findOneAndUpdate({ _id: id }, { $push: { comments: c._id }}, (err, post) => {
+      if(err) return res.json({ success: false }).status(400);
+      return res.json(c);
+    })
+  })
+})
 router.get('/message', authCheck, function(req, res, next) {
   res.sendFile('dist/index.html', { root: process.cwd() });
+})
+
+router.post('/user/check', authCheck, function(req, res, next) {
+  var user = req.body.user;
+  if(req.user.username == user) return res.json({ success: true });
+  else return res.json({ success: false });
 })
 
 // GET: MESSAGES
 // return all messages from database for speicific use
 router.get('/messages', authCheck, function(req, res, next){
+  var user = (config.DEVELOPMENT) ? config.DEVELOPMENT_TEST_USER_USERNAME : req.user.username;
+  console.log('messages');
   Message.find({$or: [
-    {from: req.user.username},
-    {to: req.user.username}
+    {from: user},
+    {to: user}
   ]}, (err, messages) => {
     if(err) return err;
+    console.log(messages);
     return res.json({ messages: messages });
   })
 });
@@ -143,18 +161,21 @@ router.get('/image', authCheck, function(req, res, next) {
 
 // POST: MESSAGE
 // add message to database and return it with style tag: "incoming"/"outgoing"
-router.post('/message', upload.single('image'), function(req, res, next) {
-  var user = req.user.username;
+router.post('/message', authCheck, upload.single('image'), function(req, res, next) {
+  var user = (config.DEVELOPMENT) ? config.DEVELOPMENT_TEST_USER_USERNAME : req.user.username;
+  var image = (config.DEVELOPMENT) ? "default.jpg" : req.user.image;
+  
   var d = new Date();
   var msgContent = (req.file) ? "" : req.body.content;
+  var msgType = (req.body.type) ? req.body.type : "message";
   var msgObj = {
     content: msgContent,
     from: user,
     to: 'jossiejpeg',
+    type: msgType,
     imageContent: (req.file) ? req.file.filename : "",
     date: d.getHours() + ":" + d.getMinutes() + " " + d.getDate() + "/" + d.getMonth(),
-    // image: req.user.image
-    image: req.user.image
+    image: image
   }
   console.log(msgObj);
   var msg = new Message(msgObj);
@@ -168,57 +189,7 @@ router.post('/message', upload.single('image'), function(req, res, next) {
   });
 });
 
-router.post('/admin/message', adminCheck, function(req, res, next) {
-  var d = new Date();
-  var msgObj = {
-    content: req.body.content, 
-    from: 'jossiejpeg',
-    to: req.body.to,
-    date: d.getHours()+":"+d.getMinutes()+" "+d.getDate()+"/"+d.getMonth(),
-    image: "pfp.jpg"
-  }
-  var msg = new Message(msgObj);
-  io.emit('chat message', req.body.content);
-  msg.save((err) => {
-    var editedMsg = msgObj;
-    editedMsg['style'] = "outgoing";
-    return res.status(200).json(editedMsg);
-  })
-})
-
-router.get('/admin/message', function(req, res, next) {
-  // Message.find({})
-  // res.render('admin-messages');
-  res.sendFile('/dist/index.html', { root: process.cwd() });
-});
-
-router.get('/getAdminMessageReady', function(req, res, next) {
-  Message.find({$or: [
-    { user: 'jossiejpeg' },
-    { to: 'jossiejpeg' }
-  ]}, (err, messages) => {
-    var m = {};
-    for(var i = 0; i < messages.length; i++){
-      var curr = messages[i].from == 'jossiejpeg' ? messages[i].to : messages[i].from;
-      if(!m[curr]){
-        m[curr] = []
-        m[curr].push({
-          from: messages[i].from,
-          imageContent: messages[i].messageContent,
-          to: messages[i].to,
-          image: messages[i].image,
-          date: messages[i].date,
-          content: messages[i].content,
-          read: messages[i].read
-        });
-      }
-    else m[curr].push(messages[i]);
-    }
-    console.log(m)
-    return res.json({content: JSON.stringify(m)});
-  })
-});
-router.post('/message/read', function(req, res, next) {
+router.post('/message/read', authCheck, function(req, res, next) {
   var user1 = req.body.user1;
   var user2 = req.body.user2;
   Message.updateMany({$or: [{to: user1, from: user2},{to: user2, from: user1}]}, {$set: {read: true}}, (err, user) => {
@@ -229,9 +200,7 @@ router.post('/message/read', function(req, res, next) {
 // // GET /
 // render login
 router.get('/', function(req, res) {
-  // console.log('hello');
   res.redirect('/login');
-  // res.send("HEY");
 })
 
 module.exports = router;

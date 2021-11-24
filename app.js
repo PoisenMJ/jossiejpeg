@@ -15,9 +15,10 @@ var User = require('./models/user');
 
 var indexRouter = require('./routes/index');
 var paymentRouter = require('./routes/payment');
-var usersRouter = require('./routes/users');
+var adminRouter = require('./routes/admin');
 
 var app = express();
+cors(app);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -68,8 +69,8 @@ passport.deserializeUser(function(user, done) {
 
 // NORMAL ROUTES
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
 app.use('/payment', paymentRouter);
+app.use('/admin', adminRouter);
 
 // STATIC ROUTES
 app.use('/content', express.static(path.join(process.cwd(), 'content')));
