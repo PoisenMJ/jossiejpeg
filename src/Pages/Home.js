@@ -1,7 +1,6 @@
 import React from 'react';
 import Navigation from './Navigation';
-import data from '../../config.json';
-const ROUTE_PREFIX = (data.DEVELOPMENT) ? '/api' : '';
+import route_prefix from '../../utility';
 import { FaMoneyBillWave, FaHeart, FaRegHeart } from 'react-icons/fa';
 import TipModal from '../Components/TipModal';
 import MessageFlash from '../Components/MessageFlash';
@@ -14,7 +13,7 @@ export default class Home extends React.Component{
             posts: []
         }
 
-        fetch(`${ROUTE_PREFIX}/posts`, {
+        fetch(`${route_prefix}/posts`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
@@ -52,7 +51,9 @@ export default class Home extends React.Component{
                             tipClickCallback={this.onTipButtonClick}
                             postId={post._id}
                             likes={post.likes.length}
-                            liked={post.liked}/>
+                            liked={post.liked}
+                            comments={post.comments}
+                            restrictedComments={post.restrictedComments}/>
                         )
                     })}
                 </div>

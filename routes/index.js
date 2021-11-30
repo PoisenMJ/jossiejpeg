@@ -33,6 +33,14 @@ function isAuthenticated(req, res, next){
   next();
 }
 
+
+// TODO:
+// message flash display none so u dont not be able to click when its not showing
+// stop login if banned
+// flash after ban
+// restrict post comments
+
+
 /* GET home page. */
 router.get('/login', function(req, res, next) {
   res.render('login');
@@ -106,9 +114,11 @@ router.post('/home/unlike', authCheck, function(req, res, next) {
 router.post('/home/comment', authCheck, function(req, res, next) {
   var id = req.body.postID, content = req.body.comment, date = new Date().toString();
   var user = (development) ? "maksjl01" : req.user.username;
+  var image = (development) ? "default.jpg" : req.user.image;
   console.log(content);
   var comment = new Comment({
     user: user,
+    image: image,
     content: content,
     date: date,
     postID: id
@@ -116,7 +126,7 @@ router.post('/home/comment', authCheck, function(req, res, next) {
   comment.save((err, c) => {
     if(err) return res.json({ success: false }).status(400);
     console.log(comment);
-    Post.findOneAndUpdate({ _id: id }, { $push: { comments: c._id }}, (err, post) => {
+    Post.findOneAndUpdate({ _id: id }, { $push: { comments: c }}, (err, post) => {
       if(err) return res.json({ success: false }).status(400);
       return res.json(c);
     })
@@ -130,6 +140,16 @@ router.post('/user/check', authCheck, function(req, res, next) {
   var user = req.body.user;
   if(req.user.username == user) return res.json({ success: true });
   else return res.json({ success: false });
+});
+
+router.get('/user', authCheck, function(req, res, next) {
+  var user = (config.DEVELOPMENT) ?
+  {"username": "maksjl01",
+  "firstName": "Maks",
+  "lastName": "lewis",
+  "image": "default.jpg",
+  "email": "maksjl01@gmail.com"} : req.user;
+  return res.json(user);
 })
 
 // GET: MESSAGES

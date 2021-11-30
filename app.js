@@ -53,6 +53,7 @@ passport.use('local', new LocalStrategy({
     if(err) return done(err, false);
     if(!user) return done(null, false);
     if(!user.checkPassword(password)) return done(null, false);
+    if(user.role == "banned") return done(null, false);
     return done(null, user);
   })
 }));

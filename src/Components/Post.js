@@ -2,6 +2,7 @@ import React from "react";
 import ROUTE_PREFIX from '../../utility';
 
 import { FaMoneyBillWave, FaRegHeart, FaHeart, FaRegCommentAlt, FaArrowRight } from 'react-icons/fa';
+import CommentsBox from "./CommentsBox";
 
 export default class Post extends React.Component{
     constructor(props){
@@ -52,7 +53,7 @@ export default class Post extends React.Component{
             })}).then(raw => raw.json()).then(data => {
                 var c = this.state.comments;
                 c.push(data);
-                this.setState({ comments: c });
+                this.setState({ comments: c, comment: '' });
             })
     }
 
@@ -118,12 +119,15 @@ export default class Post extends React.Component{
                         : <FaHeart style={{marginBottom: '3px', marginRight: '3px', cursor: 'pointer'}} onClick={this.unlike.bind(this)}/>}{this.state.likes}
                         <FaRegCommentAlt style={{marginBottom: '3px', marginRight: '3px', marginLeft: '6px', cursor: 'pointer'}} onClick={this.comment} />
                     </div>
-                    <div className="post-comments">
-                        <div className="input-group mb-3">
-                            <input type="text" onChange={this.onCommentChange.bind(this)} className="form-control"></input>
-                            <button className="btn btn-secondary" onClick={this.comment.bind(this)}><FaArrowRight/></button>
+                    <CommentsBox comments={this.state.comments}/>
+                    {this.props.restrictedComments ? <span>Comments Restricted</span> :
+                        <div className="post-comments">
+                            <div className="input-group mb-3">
+                                <input type="text" value={this.state.comment} onChange={this.onCommentChange.bind(this)} className="form-control"></input>
+                                <button className="btn btn-secondary" onClick={this.comment.bind(this)}><FaArrowRight/></button>
+                            </div>
                         </div>
-                    </div>
+                    }
                 </div>
             </div>
         )

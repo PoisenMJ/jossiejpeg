@@ -1,7 +1,5 @@
 import React from 'react';
-import { FaUpload, FaEnvelope, FaBars, FaSignOutAlt, FaSmile, FaMoneyBillWave } from 'react-icons/fa';
-import data from '../../../config.json';
-const PREFIX = (data.DEVELOPMENT) ? data.DEVELOPMENT_ROUTE_PREFIX : '';
+import { FaUpload, FaEnvelope, FaBars, FaSignOutAlt, FaSmile, FaMoneyBillWave, FaExclamationCircle } from 'react-icons/fa';
 
 export default class AdminNavigation extends React.Component{
     getClass(name){
@@ -39,7 +37,6 @@ export default class AdminNavigation extends React.Component{
         this.openSideBar("admin-nav-toggle", "nav-bar", "header");
     }
 
-
     render(){
         return (
             <div>
@@ -67,6 +64,10 @@ export default class AdminNavigation extends React.Component{
                                 <a href="/admin/statements" className={this.getClass("statements")}>
                                     <FaMoneyBillWave style={{marginRight: "8px", marginBottom: "4px"}}/>
                                     <span className="nav_name">Statements</span>
+                                </a>
+                                <a href="/admin/moderation" className={this.getClass("moderation")}>
+                                    <FaExclamationCircle style={{marginRight: "8px", marginBottom: "4px"}}/>
+                                    <span className="nav_name">Moderation</span>
                                 </a>
                             </div>
                         </div>

@@ -329,7 +329,8 @@ a {text-decoration: none}
     height: 20%;
     bottom: 0;
     z-index: 100;
-    display: grid;
+    /* display: grid; */
+    display: none;    
     place-items: center;
 }
 .message-tip-header{
@@ -464,11 +465,62 @@ a {text-decoration: none}
 .revenue-month{
     width: 100%;
     padding-left: 0.5rem;
-    padding-right: 0.5rem;
+padding-right: 0.5rem;
     padding-bottom: 1rem;
 }
 .accordion-collapse{
     width: 100%!important;
+}
+#upload-mobile-no-posts{
+    width: 100%;
+    height: calc((100vh - var(--header-height))*0.6);
+    display: grid;
+    place-items: center;
+}
+.post-mobile{
+    display: grid;
+    grid-template-columns: auto 1fr 1fr min-content;
+    grid-template-areas: "image desc date edit";
+    grid-auto-flow: row;
+    width:100%;
+    background-color: pink;
+    padding: .75rem .6rem;
+    border-radius: 3px;
+    margin-bottom: .25rem;
+    align-items: center;
+}
+#upload-mobile{
+    padding: .5rem;
+}
+.post-mobile-date-posted{
+    justify-self: center;
+    grid-area: date;
+}
+.post-mobile-description{
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    grid-area: desc;
+}
+.post-mobile-img{
+    height: 40px;
+    width: 40px;
+    object-fit: cover;
+    margin-right: .5rem;
+    grid-area: image;
+}
+.post-mobile-date-edit{
+    grid-area: edit;
+}
+
+.edit-post-images{
+    display: grid;
+    grid-template-columns: 20% 20% 20% 20% 20%;
+    padding: .3rem;
+}
+.edit-post-image{
+    width: 100%;
+    padding: .2rem;
 }
 
 
@@ -613,6 +665,86 @@ a {text-decoration: none}
     padding-left: .25rem;
 }
 .like-button{cursor: pointer;}
+#default-card{
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
+    padding: .375rem .75rem;
+    display: grid;
+    grid-auto-flow: column;
+}
+#default-card-brand{
+    text-transform: uppercase;
+    justify-self: center;
+}
+
+.profile-button {
+    background: #BA68C8;
+    box-shadow: none;
+    border: none
+}
+.profile-button:hover {
+    background: #682773
+}
+.profile-button:focus {
+    background: #682773;
+    box-shadow: none
+}
+.profile-button:active {
+    background: #682773;
+    box-shadow: none
+}
+.back:hover {
+    color: #682773;
+    cursor: pointer
+}
+.user-settings-image:hover{
+    filter: brightness(0.9);
+    cursor: pointer;
+}
+.text-waver{
+    font-size: .6rem;
+    text-rendering: optimizeLegibility;
+    animation-duration: 1s;
+    animation-name: waver;
+    animation-iteration-count: infinite;
+}
+@keyframes waver {
+    0% {
+        filter: opacity(1);
+    }
+    50% {
+        filter: opacity(0.5);
+    }
+    100% {
+        filter: opacity(1);
+    }
+}
+
+
+.comment-parent{
+    display: grid;
+    grid-template-columns: 10% 90%;
+    background-color: rgb(246,246,246);
+    border-radius: 5px;
+    padding: 2px;
+    margin-bottom: .5rem;
+}
+.comment-content{
+    display: flex;
+    flex-direction: column;
+    margin-left: .5rem;
+}
+.comment-content-user-name{
+    font-size: .9rem;
+    font-weight: 600;
+    justify-self: start;
+}
+.comment-user-image{
+    place-self: center;
+    width: 80%;
+    border-radius: 50%;
+
+}
 
 /* MESSAGE CSS */
 /* #parent{ display: grid; }
@@ -767,4 +899,39 @@ a {text-decoration: none}
 	.payment-form .products .price {font-size: 1em;}
 	.payment-form .card-details {padding: 40px 40px 30px;}
 	.payment-form .card-details button {margin-top: 2em; } 
+}
+
+#admin-moderation{
+    display: grid;
+    grid-template-rows: 95% 5%;
+    height: calc(100vh - var(--header-height) - 1rem);
+    overflow-y: hidden;
+}
+#admin-moderation-user-list{
+    background-color: pink;
+    width: 100%;
+    overflow-y: scroll;
+}
+.admin-moderation-user{
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-columns: 35% 25% 20% 20%;
+    background-color: pink;
+    padding: .2rem;
+}
+.admin-moderation-user:hover{
+    background-color: rgb(254, 184, 196);
+    cursor: pointer;
+}
+.admin-moderation-user.active{
+    background-color: rgb(250, 180, 192);
+}
+.overflow-check{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#admin-moderation-actions{
+    display: grid;
+    align-items: center;
 }

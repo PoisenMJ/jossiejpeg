@@ -11,6 +11,7 @@ import Payment from "./Pages/Payment";
 import AdminStatements from "./Pages/admin/AdminStatements";
 import Settings from "./Pages/Settings";
 import './index.css';
+import AdminModeration from "./Pages/admin/AdminModeration";
 
 export default function App() {
     return (
@@ -20,9 +21,11 @@ export default function App() {
                 <Route exact path="/home" component={Home}/>
                 <Route exact path="/message" component={Messages}/>
                 <Route exact path="/settings" component={Settings}/>
+                <Route exact path="/admin/" component={AdminUpload}/>
                 <Route exact path="/admin/message" component={AdminMessages}></Route>
                 <Route exact path="/admin/upload" component={AdminUpload}></Route>
                 <Route exact path="/admin/statements" component={AdminStatements}/>
+                <Route exact path="/admin/moderation" component={AdminModeration}/>
             </Switch>
         </BrowserRouter>
     )

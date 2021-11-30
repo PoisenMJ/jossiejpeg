@@ -149,4 +149,23 @@ router.post('/stripe/update-subscription', function(req, res, next) {
     }
 });
 
+router.get('/stripe/get-default-payment-method', async function(req, res, next) {
+    var user = (config.DEVELOPMENT) ? "maksjl01" : req.user.username;
+    console.log(user);
+    subscription.findOne({ user: user }, async (err, user) => {
+        if(err) console.log(err);
+        const customer = await stripe.customers.retrieve(user.customerID);
+        const payment_method = await stripe.paymentMethods.retrieve(customer.invoice_settings.default_payment_method);
+        console.log(payment_method);
+        var year = payment_method.card.exp_year.toString();
+        var month = payment_method.card.exp_month.toString();
+        return res.json({
+            lastFour: payment_method.card.last4,
+            exp_year: year.substr(year.length-2),
+            exp_month: (month.length == 1) ? "0"+month : month,
+            brand: payment_method.card.brand
+        })
+    })
+})
+
 module.exports = router;

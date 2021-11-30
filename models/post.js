@@ -20,6 +20,10 @@ var postSchema = new mongoose.Schema({
     comments: {
         type: [commentSchema],
         default: []
+    },
+    restrictedComments: {
+        type: Boolean,
+        default: false
     }
 });
 
