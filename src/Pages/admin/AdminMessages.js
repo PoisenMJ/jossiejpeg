@@ -9,7 +9,7 @@ import AdminNavigation from './AdminNavigation';
 const socket = socketIOClient("http://127.0.0.1:"+PORT);
 
 import { useMediaQuery } from 'react-responsive';
-import { FaComment } from 'react-icons/fa';
+import { FaComments } from 'react-icons/fa';
 
 const useMobileQuery = () => useMediaQuery({ query: '(max-width: 768px)' })
 const Mobile = ({ children }) => {
@@ -148,7 +148,7 @@ export default class AdminMessages extends React.Component{
             <div id="parent">
                 <Desktop><AdminNavigation location="message"/></Desktop>
                 <Mobile>
-                    <AdminNavigation location="message" headerActions={<div><FaComment onClick={this.showInbox}/></div>}/>
+                    <AdminNavigation location="message" headerActions={<div><FaComments style={{color: 'pink',cursor:'pointer'}} onClick={this.showInbox}/></div>}/>
                 </Mobile>
                     <Desktop>
                     <div className="message-parent">
@@ -190,15 +190,29 @@ export default class AdminMessages extends React.Component{
                                 <div key={"messages-user-"+index} className={classN} id={"chat-"+(index+1)+"-box"} role="tabpanel" aria-labelledby={"inbox-user-"+index}>
                                     <div className="admin-message-box">
                                     {messages.map((message, index2) => {
-                                        var msgType = (message.from == "jossiejpeg") ? "outgoing" : "incoming";
-                                        let msgContent = (message.content) ? 
-                                            <span className={msgType+"-text-box"}>{message.content}</span> : 
+                                        var msgType = (message.from == "jossiejpeg") ? "jossie-message outgoing" : "incoming";
+                                        let msgContent;
+                                        let tipStyle = (message.type =="tip") ? "tip":"";
+                                        if (message.content){
+                                            if(message.type == "tip"){
+                                                var split = message.content.split('*');
+                                                var header = split[0];
+                                                var msgContentSplit = split.splice(1, split.length);
+                                                msgContent = <div className={msgType+"-text-box"}>
+                                                    <span className="message-tip-header">{header}</span> <br/>
+                                                    <span>{msgContentSplit.toString()}</span>
+                                                </div>
+                                            } else if(message.type == "message"){
+                                                msgContent = <span className={msgType+"-text-box"}>{message.content}</span>
+                                            }
+                                        } else {
                                             <img className={msgType+"-image-content"} src={`${PREFIX}/content/${message.imageContent}`}/>;
+                                        }
                                         let lastMessageID = (index2 == messages.length - 1) && this.state.currentlyOpen == this.state.names[index] ? "lastMessage": "";
                                         return (
                                             <div className={msgType+"-message message"} key={index2} id={lastMessageID}>
                                                 <span className={msgType+"-user"}>{message.from}</span>
-                                                <div className={msgType+"-message-content"}>
+                                                <div className={msgType+"-message-content "+tipStyle}>
                                                     <img className={msgType+"-user-img"} src={`${PREFIX}/content/users/${message.image}`}/>
                                                     {msgContent}
                                                     <div className={msgType+"-info"}><span>{message.date}</span></div>
@@ -224,25 +238,26 @@ export default class AdminMessages extends React.Component{
                         </div>
                     </div>
                     </Desktop>
+
                     <Mobile>
                     <div className="message-parent-sm">
                         <div className="inbox-mobile nav flex-column" id="chat-inbox-navigation" role="tablist">
                             {names.length == 0 ?
-                                <div className="inbox-user-parent blur">
-                                    <img className="inbox-user-image" src={`${PREFIX}/content/users/default.jpg`}/>
-                                    <div className="inbox-user-details"><span className="inbox-user-name">John Doe</span>
-                                    <span className="inbox-user-message">random new message information</span></div>
-                                    <div className="inbox-user-date-read">
-                                        <div className="inbox-user-date">10:34 PM</div>
-                                    </div>
+                                <div id="inbox-mobile-empty-inbox">
+                                    <span className="text-center display-6">No Messages</span>
                                 </div>
                                 : ""
                             }
                             {names.map((name, indx) => {
                                 var lastI = content[name].length;
-                                var lastMsg = (content[name][lastI-1].content) ? content[name][lastI-1].content : "Image";
+                                var lastMsg;
                                 var classN = (indx == 0) ? "inbox-user-parent active":"inbox-user-parent";
                                 
+                                if(content[name][lastI-1].type == "tip"){
+                                    var split = content[name][lastI-1].content.split("*")[0];
+                                    lastMsg = split;
+                                } else lastMsg = (content[name][lastI-1].content) ? content[name][lastI-1].content : "Image";
+
                                 return(
                                     <div onClick={this.onChange.bind(this, name)} key={"inbox_"+name} className={classN} id={"inbox-user-"+(indx+1)} data-bs-toggle="tab" data-bs-target={"#chat-"+(indx+1)+"-box"} type="button" role="tab" aria-controls={"chat-"+indx+"-box"} aria-selected={(indx == 0 ? "true" : "false")}>
                                         <img className="inbox-user-image" src={`${PREFIX}/content/users/${content[name][0].image}`}/>
@@ -265,14 +280,30 @@ export default class AdminMessages extends React.Component{
                                         <div className="admin-message-box">
                                         {messages.map((message, index2) => {
                                             var msgType = (message.from == "jossiejpeg") ? "outgoing" : "incoming";
-                                            let msgContent = (message.content) ? 
-                                                <span className={msgType+"-text-box"}>{message.content}</span> : 
-                                                <img className={msgType+"-image-content"} src={`${PREFIX}/content/${message.imageContent}`}/>;
+                                            var msgColor = (message.from == "jossiejpeg")?"jossie-message":"";
+                                            var tipStyle = (message.type == "tip")?"tip":"";
+                                            let msgContent;
+                                            if (message.content){
+                                                if(message.type == "message"){
+                                                    msgContent = <span className={msgType+"-text-box"}>{message.content}</span>
+                                                } else if (message.type == "tip"){
+                                                    var split = message.content.split('*');
+                                                    var header = split[0];
+                                                    var msgContentSplit = split.splice(1, split.length);
+                                                    msgContent = <div className={msgType+"-text-box"}>
+                                                        <span className="message-tip-header">{header}</span> <br/>
+                                                        <span>{msgContentSplit.toString()}</span>
+                                                    </div>
+                                                }
+
+                                            } else {
+                                                msgContent = <img className={msgType+"-image-content"} src={`${PREFIX}/content/${message.imageContent}`}/>;
+                                            }
                                             let lastMessageID = (index2 == messages.length - 1) && this.state.currentlyOpen == this.state.names[index] ? "lastMessage": "";
                                             return (
                                                 <div className={msgType+"-message message"} key={index2} id={lastMessageID}>
                                                     <span className={msgType+"-user"}>{message.from}</span>
-                                                    <div className={msgType+"-message-content"}>
+                                                    <div className={msgType+"-message-content "+tipStyle+" "+msgColor}>
                                                         <img className={msgType+"-user-img"} src={`${PREFIX}/content/users/${message.image}`}/>
                                                         {msgContent}
                                                         <div className={msgType+"-info"}><span>{message.date}</span></div>
@@ -290,7 +321,7 @@ export default class AdminMessages extends React.Component{
                                     <div className="input-group">
                                         {/* <span className="input-group-text"><i className="fa fa-paperclip"></i></span> */}
                                         <input className="form-control" value={this.state.messageContent} onChange={this.setMessage.bind(this)} id="message" type="text" placeholder="Send message..." aria-label="Message box" aria-describedby="sendMessage" name="message" />
-                                        <button className="btn btn-secondary" id="sendMessage" type="submit">Send</button>
+                                        <button className="btn btn-secondary" disabled={!this.state.messageContent} id="sendMessage" type="submit">Send</button>
                                     </div>
                                 </form>
                             </div>

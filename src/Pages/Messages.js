@@ -7,6 +7,7 @@ import socketIOClient from 'socket.io-client';
 const PORT = (data.DEVELOPMENT) ? data.DEVELOPMENT_PORT : "3000";
 const socket = socketIOClient("http://127.0.0.1:"+PORT);
 import TipModal from '../Components/TipModal';
+import {flash} from 'react-universal-flash';
 
 export default class Messages extends React.Component{
     constructor(props){
@@ -119,6 +120,7 @@ export default class Messages extends React.Component{
         return(
             <div id="parent">
                 <TipModal ref={this.tipModalRef} from={"messages"} onSuccess={this.onTipSent.bind(this)}/>
+                {/* <div onClick={() => flash("Hey there we logged in and its all working", 10000, "green")}>Click for hello</div> */}
                 <Navigation location="message" headerContent={
                     (<div className="header-content">
                         <img className="header-profile-image" src={`${PREFIX}/content/users/pfp.jpg`}/>
@@ -135,6 +137,7 @@ export default class Messages extends React.Component{
                     <div className="message-box">
                         {messages.map((message, index) => {
                             let style = (message.from == "jossiejpeg") ? "incoming" : "outgoing";
+                            let msgColor = (message.from == "jossiejpeg")?"jossie-message":"";
                             let tipStyle = (message.type == "tip") ? "tip" : "";
                             let content;
                             if(message.type == "message"){
@@ -152,7 +155,7 @@ export default class Messages extends React.Component{
                             return(
                                 <div className={style+"-message message"} key={index}>
                                     <span className={style+"-user"}>{message.from}</span>
-                                    <div className={style+"-message-content "+tipStyle}>
+                                    <div className={style+"-message-content "+tipStyle+" "+msgColor}>
                                         <img src={`${PREFIX}/content/users/${message.image}`} className={style+"-user-img"}/>
                                         {content}
                                         <div className={style+"-info"}><span>{message.info}</span></div>
@@ -169,7 +172,7 @@ export default class Messages extends React.Component{
                                 </span>
                                 <input className="form-control" id="message" type="text" placeholder="Send message..." aria-label="message box" aria-describedby="sendMessage" name="message" value={this.state.currentMessageContent} onChange={this.onInputChange.bind(this)}/>
                                 <input className="visually-hidden" id="imageInput" type="file" name="image"/>
-                                <button className="btn btn-primary" id="sendMessage" type="submit">Send</button>
+                                <button disabled={!(this.state.currentImageContent||this.state.currentMessageContent)} className="btn btn-primary" id="sendMessage" type="submit">Send</button>
                             </div>
                         </form>
                     </div>

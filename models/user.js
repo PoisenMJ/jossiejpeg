@@ -13,7 +13,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: "user"
     },
-    username: String,
+    username: {
+        type: String,
+        unique: true
+    },
     subscribed: {
         type: Boolean,
         default: false

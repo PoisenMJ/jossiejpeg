@@ -12,11 +12,15 @@ import AdminStatements from "./Pages/admin/AdminStatements";
 import Settings from "./Pages/Settings";
 import './index.css';
 import AdminModeration from "./Pages/admin/AdminModeration";
+import {Flasher} from 'react-universal-flash';
+import Alert from './Components/Alert';
+import Login from "./Pages/Login";
 
 export default function App() {
     return (
         <BrowserRouter>
             <Switch>
+                <Route exact path="/login" component={Login}/>
                 <Route exact path="/payment" component={Payment}/>
                 <Route exact path="/home" component={Home}/>
                 <Route exact path="/message" component={Messages}/>
@@ -27,6 +31,9 @@ export default function App() {
                 <Route exact path="/admin/statements" component={AdminStatements}/>
                 <Route exact path="/admin/moderation" component={AdminModeration}/>
             </Switch>
+            <Flasher position="bottom_center">
+                <Alert/>
+            </Flasher>
         </BrowserRouter>
     )
 }

@@ -90,7 +90,7 @@ router.post('/tip', async function(req, res, next) {
         user = (development) ? "maksjl01" : req.user.username,
         customerID;
 
-    subscription.findOne({username: user}, async (err, sub) => {
+    subscription.findOne({user: user}, async (err, sub) => {
         if(err) return err;
         customerID = sub.customerID;
         console.log("Customer ID: " + customerID);

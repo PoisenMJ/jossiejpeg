@@ -11,6 +11,7 @@ var router = express.Router();
 var fs = require('fs');
 var config = require('../config.json');
 var authCheck = (config.DEVELOPMENT) ? development : isAuthenticated;
+const crypto = require('crypto');
 
 
 var multer = require('multer');
@@ -35,10 +36,10 @@ function isAuthenticated(req, res, next){
 
 
 // TODO:
-// message flash display none so u dont not be able to click when its not showing
 // stop login if banned
 // flash after ban
 // restrict post comments
+// change password
 
 
 /* GET home page. */
@@ -46,9 +47,10 @@ router.get('/login', function(req, res, next) {
   res.render('login');
 });
 router.post('/login', function(req, res, next) {
+  console.log('login');
   passport.authenticate('local', (err, user, info) => {
-    if(err) return res.redirect('/login');
-    if(!user) return res.redirect('/login');
+    if(err) return res.redirect('/login?failure=true');
+    if(!user) return res.redirect('/login?failure=true');
     req.login(user, (err) => {
       if(user.role == "admin") return res.redirect('/admin/upload');
       else return res.redirect('/home'); 
@@ -68,8 +70,7 @@ router.post('/create-account', (req, res, next) => {
   });
   newUser.save((err) => {
     console.log(err);
-    if(err) res.redirect('/create-account');
-    else res.redirect('/login');
+    res.redirect('/login');
   });
 });
 
@@ -216,6 +217,40 @@ router.post('/message/read', authCheck, function(req, res, next) {
     return res.status(200).json({success: true});
   })
 });
+
+router.get('/username/check/:username', authCheck, function(req, res, next) {
+  var username = req.query.username;
+  User.find({ username: username }, (err, user) => {
+    console.log(user);
+    console.log(err);
+    if(err) res.json({ available: false });
+    else return res.json({ available: true });
+  })
+});
+
+router.get('/email/check/:email', authCheck, function(req, res, next) {
+  var email = req.query.email;
+  User.find({ email: email }, (err, user) => {
+    if(err) res.json({ available: false });
+    else return res.json({ available: true });
+  })
+})
+
+router.post('/user/update',authCheck,upload.single('image'), function (req, res, next) {
+  var username = (config.DEVELOPMENT) ? "maksjl01" : req.user.username;
+  // on password set make sure its encrypted
+  var hashed_password = crypto.createHash('md5').update(req.body.password).digest('hex');
+  
+  
+  User.updateOne({ username: username }, { $set: {
+    // image: req.body.image,
+    password: hashed_password
+  }}, (err, user) => {
+    console.log(err);
+    if(err) return res.json({ success: false });
+    else return res.json({ success: true });
+  })
+})
 
 // // GET /
 // render login

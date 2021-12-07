@@ -75,7 +75,8 @@ router.post('/message', adminCheck, function(req, res, next) {
         from: 'jossiejpeg',
         to: req.body.to,
         date: d.getHours()+":"+d.getMinutes()+" "+d.getDate()+"/"+d.getMonth(),
-        image: "pfp.jpg"
+        image: "pfp.jpg",
+        type: "message"
     }
     var msg = new Message(msgObj);
     io.emit('chat message', req.body.content);
@@ -103,6 +104,7 @@ router.get('/message/ready', adminCheck, function(req, res, next) {
                 image: messages[i].image,
                 date: messages[i].date,
                 content: messages[i].content,
+                type: messages[i].type,
                 read: messages[i].read
             });
         }

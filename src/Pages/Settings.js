@@ -1,6 +1,7 @@
 import React from "react";
 import route_prefix from "../../utility";
 import Navigation from "./Navigation";
+import {flash} from 'react-universal-flash';
 
 export default class Settings extends React.Component{
     constructor(props){
@@ -46,14 +47,11 @@ export default class Settings extends React.Component{
     }
 
     updateInput(event){
-        switch(event.target.name){
-            case "username":
-                this.setState({ username: event.target.value });
-                break;
-            case "newpassword":
+        switch(event.target.id){
+            case "password":
                 this.setState({ newPasswordInput: event.target.value });
                 break;
-            case "newpasswordconfirm":
+            case "confirm_password":
                 this.setState({ newPasswordConfirmInput: event.target.value });
                 break;
         }
@@ -70,7 +68,23 @@ export default class Settings extends React.Component{
         })
     }
 
-    saveProfile(){
+    saveProfile(event){
+        event.preventDefault();
+        var p = document.getElementById("password").value;
+        var cp = document.getElementById("confirm_password").value;
+        if(p != cp) flash("Passwords Don't Match", 10000, "red");
+
+        var formData = new FormData();
+        formData.append("password", this.state.newPasswordInput);
+        if(this.state.newImage) formData.append('image', this.state.image);
+
+        fetch(`${route_prefix}/user/update`, {
+            method: "POST",
+            body: formData
+        }).then(raw => raw.json()).then(data => {
+            if(data.success) flash("Updated", 10000, "green");
+            else flash("Update Failed", 10000, "red");
+        })
     }
 
     render(){
@@ -90,6 +104,7 @@ export default class Settings extends React.Component{
             <div id="parent">
                 <Navigation location="settings"/>
                 <div id="settings">
+                    <form id="updateUserForm">
                     <div className="container rounded bg-white mt-5">
                         <div className="row">
                             <div className="col-md-4 border-right">
@@ -112,10 +127,9 @@ export default class Settings extends React.Component{
                                     <div className="row mt-2">
                                         <div className="col-sm-3 mb-1">
                                             <input type="text"
+                                                disabled
                                                 className="form-control"
-                                                value={this.state.username}
-                                                name="username"
-                                                onChange={this.updateInput.bind(this)}/>
+                                                placeholder={this.state.username}/>
                                         </div>
                                         <div className="col-sm-3">
                                             <input type="text"
@@ -128,18 +142,19 @@ export default class Settings extends React.Component{
                                         <span className="mb-1">Update Password</span>
                                         <div className="col-sm-12">
                                             <input type="password"
+                                                name="password"
+                                                id="password"
                                                 className="form-control"
                                                 placeholder="new password"
                                                 value={this.state.newPasswordInput}
-                                                name="newpassword"
                                                 onChange={this.updateInput.bind(this)}/>
                                         </div>
                                         <div className="col-sm-12 mt-1">
                                             <input type="password"
+                                                id="confirm_password"
                                                 className="form-control"
                                                 placeholder="confirm new password"
                                                 value={this.state.newPasswordConfirmInput}
-                                                name="newpasswordconfirm"
                                                 onChange={this.updateInput.bind(this)}/>
                                         </div>
                                     </div>
@@ -151,18 +166,6 @@ export default class Settings extends React.Component{
                                             <span id="default-card-brand">{brand}</span>
                                         </div>
                                     </div>
-                                    {/* <div className="row mt-3">
-                                        <div className="col-md-6">
-                                            <input type="text" className="form-control" placeholder="address" value="D-113, right avenue block, CA,USA"/>
-                                        </div>
-                                        <div className="col-md-6">
-                                            <input type="text" className="form-control" value="USA" placeholder="Country"/>
-                                        </div>
-                                    </div> */}
-                                    {/* <div className="row mt-3">
-                                        <div className="col-md-6"><input type="text" className="form-control" placeholder="Bank Name" value="Bank of America"/></div>
-                                        <div className="col-md-6"><input type="text" className="form-control" value="043958409584095" placeholder="Account Number"/></div>
-                                    </div> */}
                                     <div className="mt-5 text-right">
                                         <button onClick={this.saveProfile.bind(this)} className="btn btn-primary profile-button" type="button">Save</button>
                                     </div>
@@ -170,6 +173,7 @@ export default class Settings extends React.Component{
                             </div>
                         </div>
                     </div>
+                </form>
                 </div>
             </div>
         );
