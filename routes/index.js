@@ -1,5 +1,4 @@
 var express = require('express');
-var path = require('path');
 var process = require('process');
 const passport = require('passport');
 const Post = require('../models/post');
@@ -8,7 +7,6 @@ const Message = require('../models/message');
 const {Comment} = require('../models/comment');
 var io = require('socket.io')();
 var router = express.Router();
-var fs = require('fs');
 var config = require('../config.json');
 var authCheck = (config.DEVELOPMENT) ? development : isAuthenticated;
 const crypto = require('crypto');
@@ -16,7 +14,10 @@ const crypto = require('crypto');
 
 var multer = require('multer');
 var storage = multer.diskStorage({
-  destination: './content',
+  destination: (req, file, cb) => {
+    if(file.fieldname == "userImage") cb(null, './content/users');
+    else cb(null, './content');
+  },
   filename: (req, file, cb) => {
     const uniqueSuffix = '-' + Date.now() + '-' + Math.round(Math.random()*1E9)+'.';
     console.log(file);
@@ -34,13 +35,9 @@ function isAuthenticated(req, res, next){
   next();
 }
 
-
 // TODO:
-// stop login if banned
-// flash after ban
-// restrict post comments
-// change password
-
+// stop login if banned flash after ban
+// restrict post comments (double check)
 
 /* GET home page. */
 router.get('/login', function(req, res, next) {
@@ -87,6 +84,7 @@ router.get('/posts', authCheck, function(req, res, next) {
       if(posts[post].likes.includes("maksjl01")) posts[post]._doc.liked = true;
       else posts[post]._doc.liked = false;
     }
+    console.log(posts);
     return res.json({ posts: posts });
   })
 });
@@ -116,21 +114,27 @@ router.post('/home/comment', authCheck, function(req, res, next) {
   var id = req.body.postID, content = req.body.comment, date = new Date().toString();
   var user = (development) ? "maksjl01" : req.user.username;
   var image = (development) ? "default.jpg" : req.user.image;
-  console.log(content);
-  var comment = new Comment({
-    user: user,
-    image: image,
-    content: content,
-    date: date,
-    postID: id
-  });
-  comment.save((err, c) => {
-    if(err) return res.json({ success: false }).status(400);
-    console.log(comment);
-    Post.findOneAndUpdate({ _id: id }, { $push: { comments: c }}, (err, post) => {
-      if(err) return res.json({ success: false }).status(400);
-      return res.json(c);
-    })
+  
+  Post.findOne({ _id: id }, (err, post) => {
+    if(post.restrictedComments == false){
+      var comment = new Comment({
+        user: user,
+        image: image,
+        content: content,
+        date: date,
+        postID: id
+      });
+      comment.save((err, c) => {
+        if(err) return res.json({ success: false }).status(400);
+        console.log(comment);
+        Post.findOneAndUpdate({ _id: id }, { $push: { comments: c }}, (err, post) => {
+          if(err) return res.json({ success: false }).status(400);
+          return res.json(c);
+        })
+      })
+    } else {
+      return res.json({ success: false });
+    }
   })
 })
 router.get('/message', authCheck, function(req, res, next) {
@@ -144,13 +148,17 @@ router.post('/user/check', authCheck, function(req, res, next) {
 });
 
 router.get('/user', authCheck, function(req, res, next) {
-  var user = (config.DEVELOPMENT) ?
-  {"username": "maksjl01",
-  "firstName": "Maks",
-  "lastName": "lewis",
-  "image": "default.jpg",
-  "email": "maksjl01@gmail.com"} : req.user;
-  return res.json(user);
+  // var user = (config.DEVELOPMENT) ?
+  // {"username": "maksjl01",
+  // "firstName": "Maks",
+  // "lastName": "lewis",
+  // "image": "default.jpg",
+  // "email": "maksjl01@gmail.com"} : req.user;
+  User.findOne({ username: "maksjl01" }, (err, user) => {
+    if(config.DEVELOPMENT) return res.json(user);
+    else return res.json(req.user);
+
+  })
 })
 
 // GET: MESSAGES
@@ -236,20 +244,22 @@ router.get('/email/check/:email', authCheck, function(req, res, next) {
   })
 })
 
-router.post('/user/update',authCheck,upload.single('image'), function (req, res, next) {
+router.post('/user/update',authCheck,upload.single('userImage'), async function (req, res, next) {
   var username = (config.DEVELOPMENT) ? "maksjl01" : req.user.username;
-  // on password set make sure its encrypted
-  var hashed_password = crypto.createHash('md5').update(req.body.password).digest('hex');
   
-  
-  User.updateOne({ username: username }, { $set: {
-    // image: req.body.image,
-    password: hashed_password
-  }}, (err, user) => {
-    console.log(err);
-    if(err) return res.json({ success: false });
-    else return res.json({ success: true });
-  })
+  if(req.body.password){
+    var hashed_password = crypto.createHash('md5').update(req.body.password).digest('hex');
+    var u = await User.updateOne({ username: username }, { $set: {
+      password: hashed_password
+    }});
+  }
+  if(req.file){
+    var filename = req.file.filename;
+    var u = await User.updateOne({ username: username}, { $set: {
+      image: filename
+    }});
+  }
+  return res.json({ success: true });
 })
 
 // // GET /

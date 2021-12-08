@@ -84,7 +84,16 @@ export default class AdminUpload extends React.Component{
 
     openModal(){ this.setState({ showNewPostModal: true }); }
     closeModal(){ this.setState({ showNewPostModal: false }) }
-    closeEditModal(){ this.setState({ showEditPostModal: false  }); }
+    closeEditModal(){
+        fetch(`${PREFIX}/posts`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" }
+        }).then(raw => raw.json()).then(data => {
+            // reverse array so that last ones come first
+            this.setState({ posts: data.posts.reverse(), postsLoading: false });
+        });
+        this.setState({ showEditPostModal: false  });
+    }
 
     postCreated(post){
         var posts = this.state.posts;

@@ -3,7 +3,6 @@ import ROUTE_PREFIX from '../../utility';
 
 export default class CommentsBox extends React.Component {
     render(){
-        console.log(this.props.comments)
         let content = (this.props.comments) ? this.props.comments.map((comment, index) => {
             return (
                 <div className="comment-parent">

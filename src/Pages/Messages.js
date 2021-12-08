@@ -81,6 +81,7 @@ export default class Messages extends React.Component{
             c.push(data);
             socket.emit('chat message', data);
             this.setState({ messages: c, currentMessageContent: '', currentImageContent: '' }, () => {
+                document.getElementById("message").disabled = false;
                 this.scrollToLastMessage();
             });
         });
@@ -129,7 +130,8 @@ export default class Messages extends React.Component{
                 } headerActions={(
                     <div className="header-actions">
                         <button className="btn btn-secondary" onClick={this.onTipButtonClick}>
-                            <FaMoneyBillWave style={{marginRight: '2px', marginBottom: '2px'}} /> Send Tip
+                            Tip
+                            <FaMoneyBillWave style={{marginLeft: '4px', marginBottom: '2px'}} />
                         </button>
                     </div>
                 )}/>

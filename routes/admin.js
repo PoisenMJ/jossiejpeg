@@ -55,7 +55,21 @@ router.post('/upload', adminCheck, upload.any('content'), function(req, res, nex
         return res.json(post);
     })
 });
-
+router.post('/update-post', adminCheck, upload.array(), async function(req, res, next) {
+    if(req.body.description != null)
+        await Post.updateOne({_id: req.body.id}, {
+            $set: {
+                description: req.body.description
+            }
+        })
+    if(req.body.restrictComments != null)
+        await Post.updateOne({_id: req.body.id}, {
+            $set: {
+                restrictedComments: req.body.restrictComments
+            }
+        })
+    return res.json({ success: true });
+})
 router.post('/remove-post', adminCheck, function(req, res, next) {
     console.log(req.body.id);
     Post.findOneAndRemove( { _id: req.body.id }, (err, post) => {

@@ -43,7 +43,6 @@ export default class Post extends React.Component{
     }
 
     comment(){
-        console.log(this.state.comment);
         fetch(`${ROUTE_PREFIX}/home/comment`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -117,10 +116,10 @@ export default class Post extends React.Component{
                     <div className="mb-2">
                         {!liked ? <FaRegHeart style={{marginBottom: '3px', marginRight: '3px', cursor: 'pointer'}} onClick={this.like.bind(this)}/>
                         : <FaHeart style={{marginBottom: '3px', marginRight: '3px', cursor: 'pointer'}} onClick={this.unlike.bind(this)}/>}{this.state.likes}
-                        <FaRegCommentAlt style={{marginBottom: '3px', marginRight: '3px', marginLeft: '6px', cursor: 'pointer'}} onClick={this.comment} />
+                        <FaRegCommentAlt style={{marginBottom: '3px', marginRight: '3px', marginLeft: '6px', cursor: 'pointer'}}/>
                     </div>
                     <CommentsBox comments={this.state.comments}/>
-                    {this.props.restrictedComments ? <span>Comments Restricted</span> :
+                    {this.props.restrictedComments ? '' :
                         <div className="post-comments">
                             <div className="input-group mb-3">
                                 <input type="text" value={this.state.comment} onChange={this.onCommentChange.bind(this)} className="form-control"></input>

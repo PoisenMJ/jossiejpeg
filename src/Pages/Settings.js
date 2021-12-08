@@ -75,8 +75,8 @@ export default class Settings extends React.Component{
         if(p != cp) flash("Passwords Don't Match", 10000, "red");
 
         var formData = new FormData();
-        formData.append("password", this.state.newPasswordInput);
-        if(this.state.newImage) formData.append('image', this.state.image);
+        if(this.state.newPasswordInput) formData.append("password", this.state.newPasswordInput);
+        if(this.state.newImage) formData.append('userImage', this.state.image);
 
         fetch(`${route_prefix}/user/update`, {
             method: "POST",
@@ -118,12 +118,6 @@ export default class Settings extends React.Component{
                             </div>
                             <div className="col-md-8">
                                 <div className="p-3 py-5">
-                                    <div className="d-flex justify-content-between align-items-center mb-3">
-                                        <div className="d-flex flex-row align-items-center back"><i className="fa fa-long-arrow-left mr-1 mb-1"></i>
-                                            <h6>Back to home</h6>
-                                        </div>
-                                        <h6 className="text-right">Edit Profile</h6>
-                                    </div>
                                     <div className="row mt-2">
                                         <div className="col-sm-3 mb-1">
                                             <input type="text"

@@ -1,18 +1,35 @@
 import React from 'react';
 import { Modal, Form, Button } from 'react-bootstrap';
 import route_prefix from '../../utility';
+import {flash} from 'react-universal-flash';
 
 export default class EditPost extends React.Component{
     constructor(props){
         super(props);
+        this.state = {
+            description: props.post.description,
+            restrictComments: props.post.restrictedComments
+        }
         this.removePost = this.removePost.bind(this);
+        this.updatePost = this.updatePost.bind(this);
+
+        this.descriptionChange = this.descriptionChange.bind(this);
+        this.restrictCommentsChange = this.restrictCommentsChange.bind(this);
     }
 
     updatePost(){
-        fetch(`${route_prefix}/admin/update-post`, {
-            method: "POST",
-            body: new FormData(document.getElementById("editPostForm"))
-        })
+        var formData = new FormData();
+        if(this.state.description != null || this.state.restrictComments != null){
+            if(this.state.description != null) formData.append('description', this.state.description);
+            if(this.state.restrictComments != null) formData.append('restrictComments', this.state.restrictComments);
+            formData.append('id', this.props.post._id);
+            fetch(`${route_prefix}/admin/update-post`, {
+                method: "POST",
+                body: formData
+            }).then(data => {
+                flash("Updated", 10000, "green");
+            })
+        }
     }
 
     removePost(){
@@ -26,6 +43,14 @@ export default class EditPost extends React.Component{
         })
     }
 
+    descriptionChange(event){
+        this.setState({ description: event.target.value });
+    }
+    restrictCommentsChange(event){
+        var value = (this.state.restrictComments != null) ? !this.state.restrictComments : !this.props.post.restrictedComments;
+        this.setState({ restrictComments: value });
+    }
+
     render(){
         var post = this.props.post;
         var images = (post) ? (
@@ -35,7 +60,7 @@ export default class EditPost extends React.Component{
                 )
             })
         ) : '';
-        
+        var checked = (this.state.restrictComments != null)?this.state.restrictComments:post.restrictedComments;
         return(
             <Modal show={this.props.show} onHide={this.props.handleClose}>
                 <Modal.Header closeButton>
@@ -46,11 +71,8 @@ export default class EditPost extends React.Component{
                         <div className="edit-post-images">
                             {images}
                         </div>
-                        <Form.Control className="mb-2" as="textarea" name="description" defaultValue value={(post)?post.description:''}/>
-                        <Form.Select>
-                            <option default={!post.restrictComments} value="false">Don't Restrict Comments</option>
-                            <option default={post.restrictComments} value="true">Restrict Comments</option>
-                        </Form.Select>
+                        <Form.Control className="mb-2" as="textarea" name="description" onChange={this.descriptionChange} value={(this.state.description != null)?this.state.description:post.description}/>
+                        <Form.Check checked={checked} type="checkbox" name="restrictComments" label="Restrict Comments" onChange={this.restrictCommentsChange}/>
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
