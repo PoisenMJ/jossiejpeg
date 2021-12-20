@@ -32,6 +32,7 @@ const subscriptionSchema = new mongoose.Schema({
     }
 });
 
+
 subscriptionSchema.methods.getUser = function(username){
     User.findOne({ username: username }, (err, user) => {
         if(err) return false;
@@ -41,9 +42,12 @@ subscriptionSchema.methods.getUser = function(username){
 }
 
 subscriptionSchema.methods.updateUserActive = function(customerID){
-    User.findOneAndUpdate({ customerID: customerID }, { $inc: { months_paid: 1 }}).then(() => {
+    var date_subbed = this.dates_subscribed;
+    var months = parseFloat(date_subbed[date_subbed.length-1][1]) + 1;
+    date_subbed[date_subbed.length-1][1] = months;
+    this.model('subscription').findOneAndUpdate({ customerID: customerID }, { $set: { dates_subscribed: date_subbed }}).then(() => {
         return true;
-    });
+    })
 };
 
 subscriptionSchema.methods.updateUserUnactive = function(customerID){

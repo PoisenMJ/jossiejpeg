@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
-const config = require('../config.json');
+var process = require('process');
 
-mongoose.connect(config.dbURI);
+mongoose.connect(process.env.DB_URI);
 mongoose.Promise = global.Promise;
 
 mongoose.connection.on('error', (err) => {

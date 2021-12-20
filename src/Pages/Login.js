@@ -1,5 +1,5 @@
 import React from 'react';
-import route_prefix from '../../utility';
+import {route_prefix} from '../../utility';
 import CreateAccountBox from '../Components/CreateAccountBox';
 import {flash} from 'react-universal-flash';
 

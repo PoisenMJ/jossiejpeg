@@ -2,8 +2,7 @@ import React from 'react';
 import { Form } from 'react-bootstrap';
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 
-const config = require('../../config.json');
-const PREFIX = (config.DEVELOPMENT) ? config.DEVELOPMENT_ROUTE_PREFIX : '';
+import { route_prefix } from '../../utility';
 
 export default class RevenueBox extends React.Component{
     constructor(props){
@@ -23,13 +22,13 @@ export default class RevenueBox extends React.Component{
     }
 
     getNumberOfDataYears(){
-        fetch(`${PREFIX}/admin/stats/allyears`).then(raw => raw.json()).then(data => {
+        fetch(`${route_prefix}/admin/stats/allyears`).then(raw => raw.json()).then(data => {
             this.setState({ years: data });
         })
     }
 
     fetchStats(year){
-        fetch(`${PREFIX}/admin/stats/${year}`).then(raw => raw.json()).then(data => {
+        fetch(`${route_prefix}/admin/stats/${year}`).then(raw => raw.json()).then(data => {
             this.setState({ chartData: data.data, totals: data.totals })
         });
     }

@@ -1,5 +1,5 @@
 import React from "react";
-import ROUTE_PREFIX from '../../utility';
+import { route_prefix } from '../../utility';
 
 import { FaMoneyBillWave, FaRegHeart, FaHeart, FaRegCommentAlt, FaArrowRight } from 'react-icons/fa';
 import CommentsBox from "./CommentsBox";
@@ -18,7 +18,7 @@ export default class Post extends React.Component{
     like(){
         this.setState({ liked: true });
         //send to server
-        fetch(`${ROUTE_PREFIX}/home/like`, {
+        fetch(`${route_prefix}/home/like`, {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({postID: this.props.postId})
@@ -29,7 +29,7 @@ export default class Post extends React.Component{
 
     unlike(){
         this.setState({ liked: false });
-        fetch(`${ROUTE_PREFIX}/home/unlike`, {
+        fetch(`${route_prefix}/home/unlike`, {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({postID: this.props.postId})
@@ -43,7 +43,7 @@ export default class Post extends React.Component{
     }
 
     comment(){
-        fetch(`${ROUTE_PREFIX}/home/comment`, {
+        fetch(`${route_prefix}/home/comment`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -63,11 +63,11 @@ export default class Post extends React.Component{
         var content = (images.map((image, index) => {
             if(index == 0){
                 return(<div key={index} className="carousel-item active">
-                        <img className="post-image" src={`${ROUTE_PREFIX}/content/${image}`}/>
+                        <img className="post-image" src={`${route_prefix}/content/${image}`}/>
                     </div>)
             } else {
                 return(<div key={index} className="carousel-item">
-                        <img className="post-image" src={`${ROUTE_PREFIX}/content/${image}`}/>
+                        <img className="post-image" src={`${route_prefix}/content/${image}`}/>
                     </div>)
             }
         }));
@@ -82,7 +82,7 @@ export default class Post extends React.Component{
             <div className="post bg-primary">
                 <div className="post-header">
                     <div className="post-user">
-                        <img className="post-user-image" src={`${ROUTE_PREFIX}/content/users/pfp.jpg`}/>
+                        <img className="post-user-image" src={`${route_prefix}/content/users/pfp.jpg`}/>
                         <div className="post-user-details">
                             <span className="post-user-name">Jossie</span>
                             <span className="post-user-username text-muted">@jossiejpeg</span>

@@ -1,6 +1,5 @@
 import React from 'react';
-import data from '../../config.json';
-const PREFIX = (data.DEVELOPMENT) ? '/api' : '';
+import { route_prefix } from '../../utility';
 import { PaymentInputsContainer } from 'react-payment-inputs';
 
 export default class Payment extends React.Component{
@@ -45,10 +44,12 @@ export default class Payment extends React.Component{
         const email = encodeURIComponent(this.state.email);
         const cvc = encodeURIComponent(this.state.cvc);
         const formData = `cardNumber=${cardNumber}&cvc=${cvc}&expiry=${expiry}&cardholder=${cardHolder}&email=${email}`;
-        fetch(`${PREFIX}/payment/subscribe`, {
+        fetch(`${route_prefix}/payment/subscribe`, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: formData
+        }).then(raw => raw.json()).then(data => {
+            if(data.success == false) flash(data.message, 10000, "red");
         });
     }
 
@@ -72,7 +73,7 @@ export default class Payment extends React.Component{
                     <p>Subscribe to Jossie.JPEG, 1-Month Reaccuring Subscription</p>
                     </div>
                     {/* <form onSubmit={this.handleSubmit.bind(this)}> */}
-                    <form action={`${PREFIX}/payment/subscribe`} method="post">
+                    <form action={`${route_prefix}/payment/subscribe`} method="post">
                         <div className="products">
                             <h3 className="title">Checkout</h3>
                             <div className="item">

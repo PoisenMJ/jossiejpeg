@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaHome, FaEnvelope, FaBars, FaSmile, FaSignOutAlt, FaCog } from 'react-icons/fa';
+import { FaHome, FaEnvelope, FaBars, FaSmile, FaSignOutAlt, FaCog, FaImage } from 'react-icons/fa';
 
 export default class Navigation extends React.Component{
     getClass(name){
@@ -64,6 +64,10 @@ export default class Navigation extends React.Component{
                                 <a href="/settings" className={this.getClass("settings")}>
                                     <FaCog style={{marginRight: "8px", marginBottom: "4px"}}/>
                                     <span className="nav_name">Settings</span>
+                                </a>
+                                <a href="/gallery" className={this.getClass("gallery")}>
+                                    <FaImage style={{marginRight: "8px", marginBottom: "4px"}}/>
+                                    <span className="nav_name">Gallery</span>
                                 </a>
                             </div>
                         </div>

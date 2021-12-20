@@ -688,6 +688,51 @@ padding-right: 0.5rem;
     justify-self: center;
 }
 
+#gallery-header{
+    height: var(--header-height);
+    display: inline-flex;
+    width: 100%;
+    margin-left: 1rem;
+}
+#gallery-header-image{
+    height: 80%;
+    border-radius: 50%;
+    margin-right: .5rem;
+    place-self: center;
+}
+.gallery-header-name{
+    justify-self: start;
+    align-self: center;
+}
+
+#gallery-modal{
+    position: absolute;
+    top: calc(0rem - var(--header-height) - 1rem);
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0,0.4);
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+}
+.gallery-modal-image{
+    width: 100vw;
+}
+.gallery{
+    display: grid;
+    grid-template-columns: 50% 50%;
+}
+.gallery-post-image{
+    height: calc((100vh - var(--header-height) - 3rem) / 3);
+    width: 100%;
+    object-fit: cover;
+}
+.gallery-post-image:hover{
+    filter: brightness(.7);
+    cursor: pointer;
+    transition: .5s;
+}
 
 .back:hover {
     color: #682773;
@@ -917,10 +962,10 @@ padding-right: 0.5rem;
     grid-template-columns: 35% 25% 20% 20%;
     background-color: pink;
     padding: .2rem;
+    cursor: pointer!important;
 }
 .admin-moderation-user:hover{
     background-color: rgb(254, 184, 196);
-    cursor: pointer;
 }
 .admin-moderation-user.active{
     background-color: rgb(250, 180, 192);

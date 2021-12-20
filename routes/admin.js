@@ -1,7 +1,8 @@
 var express = require('express');
 var router = express.Router();
-var config = require('../config.json');
-var adminCheck = (config.DEVELOPMENT) ? (req, res, next) => next() : isAdmin;
+var process = require('process');
+var data = require('../config.json');
+var adminCheck = (data.DEV) ? (req, res, next) => next() : isAdmin;
 const Message = require('../models/message');
 var io = require('socket.io')();
 var statsHelper = require('../helpers/statsHelper');
@@ -37,6 +38,9 @@ router.get('/statements', adminCheck, function(req, res, next) {
 router.get('/upload', adminCheck, function(req, res, next) {
     res.sendFile('dist/index.html', { root: process.cwd() });
 });
+router.get('/moderation', adminCheck, function(req, res, next) {
+    res.sendFile('dist/index.html', { root: process.cwd() });
+})
 router.post('/upload', adminCheck, upload.any('content'), function(req, res, next) {
     var fileNames = [];
     for(let i = 0; i < req.files.length; i++){
@@ -44,7 +48,7 @@ router.post('/upload', adminCheck, upload.any('content'), function(req, res, nex
     }
     var d = new Date();
     var newPost = new Post({
-        datePosted: d.getDate()+'/'+d.getMonth()+'/'+d.getFullYear(),
+        datePosted: d.toString(),
         description: req.body.description,
         restrictedComments: req.body.restrictComments,
         content: fileNames

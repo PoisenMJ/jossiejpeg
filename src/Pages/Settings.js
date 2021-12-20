@@ -1,7 +1,7 @@
 import React from "react";
-import route_prefix from "../../utility";
+import { route_prefix } from "../../utility";
 import Navigation from "./Navigation";
-import {flash} from 'react-universal-flash';
+import { flash } from 'react-universal-flash';
 
 export default class Settings extends React.Component{
     constructor(props){

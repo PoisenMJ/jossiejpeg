@@ -1,10 +1,10 @@
 import React from 'react';
 import Navigation from './Navigation';
-import data from '../../config.json';
-const PREFIX = (data.DEVELOPMENT) ? data.DEVELOPMENT_ROUTE_PREFIX : "";
+import { route_prefix } from '../../utility';
 import { FaPaperclip, FaMoneyBillWave } from 'react-icons/fa';
 import socketIOClient from 'socket.io-client';
-const PORT = (data.DEVELOPMENT) ? data.DEVELOPMENT_PORT : "3000";
+var data = require('../../config.json');
+const PORT = (data.DEV) ? data.DEV_PORT : "3000";
 const socket = socketIOClient("http://127.0.0.1:"+PORT);
 import TipModal from '../Components/TipModal';
 import {flash} from 'react-universal-flash';
@@ -19,7 +19,7 @@ export default class Messages extends React.Component{
             currentImageContent: ''
         }
         
-        fetch(`${PREFIX}/messages`, {
+        fetch(`${route_prefix}/messages`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
@@ -32,7 +32,7 @@ export default class Messages extends React.Component{
         });
 
         socket.on('chat message', data => {
-            fetch(`${PREFIX}/user/check`, {
+            fetch(`${route_prefix}/user/check`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({user: data.to})
@@ -72,7 +72,7 @@ export default class Messages extends React.Component{
         formData.append('image', this.state.currentImageContent)
         formData.append('content', this.state.currentMessageContent);
 
-        fetch(`${PREFIX}/message`, {
+        fetch(`${route_prefix}/message`, {
             method: "POST",
             headers: { "Accept": "application/json" },
             body: formData
@@ -102,7 +102,7 @@ export default class Messages extends React.Component{
         var content = tip.user+' sent $'+tip.amount+'*'+tip.message;
         formData.append('content', content);
         formData.append('type', 'tip');
-        fetch(`${PREFIX}/message`, {
+        fetch(`${route_prefix}/message`, {
             method: "POST",
             headers: { "Accept": "application/json" },
             body: formData
@@ -124,7 +124,7 @@ export default class Messages extends React.Component{
                 {/* <div onClick={() => flash("Hey there we logged in and its all working", 10000, "green")}>Click for hello</div> */}
                 <Navigation location="message" headerContent={
                     (<div className="header-content">
-                        <img className="header-profile-image" src={`${PREFIX}/content/users/pfp.jpg`}/>
+                        <img className="header-profile-image" src={`${route_prefix}/content/users/pfp.jpg`}/>
                         <span className="fw-normal fs-4">Jossie.JPEG</span>
                     </div>)
                 } headerActions={(
@@ -144,7 +144,7 @@ export default class Messages extends React.Component{
                             let content;
                             if(message.type == "message"){
                                 if(message.content) content = <span className={style+"-text-box"}>{message.content}</span>
-                                else content = <img className={style+"-img-content"} src={`${PREFIX}/content/${message.imageContent}`}/>
+                                else content = <img className={style+"-img-content"} src={`${route_prefix}/content/${message.imageContent}`}/>
                             } else if (message.type == "tip") {
                                 var split = message.content.split('*');
                                 var header = split[0];
@@ -158,7 +158,7 @@ export default class Messages extends React.Component{
                                 <div className={style+"-message message"} key={index}>
                                     <span className={style+"-user"}>{message.from}</span>
                                     <div className={style+"-message-content "+tipStyle+" "+msgColor}>
-                                        <img src={`${PREFIX}/content/users/${message.image}`} className={style+"-user-img"}/>
+                                        <img src={`${route_prefix}/content/users/${message.image}`} className={style+"-user-img"}/>
                                         {content}
                                         <div className={style+"-info"}><span>{message.info}</span></div>
                                     </div>

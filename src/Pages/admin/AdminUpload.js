@@ -1,12 +1,10 @@
 import React from 'react';
 import AdminNavigation from './AdminNavigation';
-import data from "../../../config.json";
-const PREFIX = (data.DEVELOPMENT) ? '/api' : '';
+import { route_prefix } from '../../../utility';
 import { useMediaQuery } from 'react-responsive';
 import NewPost from '../../Components/NewPost';
 import { Spinner, Button } from 'react-bootstrap';
 import { FaRegEdit } from 'react-icons/fa';
-import route_prefix from '../../../utility';
 import EditPost from '../../Components/EditPost';
 
 const useMobileQuery = () => useMediaQuery({ query: '(max-width: 768px)' })
@@ -31,7 +29,7 @@ export default class AdminUpload extends React.Component{
             postsLoading: true
         }
 
-        fetch(`${PREFIX}/posts`, {
+        fetch(`${route_prefix}/posts`, {
             method: "GET",
             headers: { "Content-Type": "application/json" }
         }).then(raw => raw.json()).then(data => {
@@ -55,13 +53,13 @@ export default class AdminUpload extends React.Component{
     uploadPost(event){
         event.preventDefault();
         var formData = new FormData(document.getElementById('uploadForm'));
-        fetch(`${PREFIX}/admin/upload`, {
+        fetch(`${route_prefix}/admin/upload`, {
             method: "POST",
             // headers: { "Content-Type": "multipart/form-data" },
             body: formData
         }).then(raw => raw.json()).then(data => {
             var c = this.state.posts;
-            c.push(data);
+            c.splice(0, 0, data);
             this.setState({ posts: c });
         })
     }
@@ -71,7 +69,7 @@ export default class AdminUpload extends React.Component{
     }
 
     removePost(id){
-        fetch(`${PREFIX}/admin/remove-post`, {
+        fetch(`${route_prefix}/admin/remove-post`, {
             method: "POST",
             body: JSON.stringify({id: id}),
             headers: { "Content-Type": "application/json" }
@@ -85,7 +83,7 @@ export default class AdminUpload extends React.Component{
     openModal(){ this.setState({ showNewPostModal: true }); }
     closeModal(){ this.setState({ showNewPostModal: false }) }
     closeEditModal(){
-        fetch(`${PREFIX}/posts`, {
+        fetch(`${route_prefix}/posts`, {
             method: "GET",
             headers: { "Content-Type": "application/json" }
         }).then(raw => raw.json()).then(data => {
@@ -132,7 +130,7 @@ export default class AdminUpload extends React.Component{
                                 return (
                                     <div className="upload-post" key={index}>
                                         <div className="upload-post-content bg-primary">
-                                            <img className="upload-post-image" src={`${PREFIX}/content/${post.content[0]}`} />
+                                            <img className="upload-post-image" src={`${route_prefix}/content/${post.content[0]}`} />
                                             <div className="upload-post-footer">
                                                 <span className="upload-post-text">{post.description}</span>
                                                 {/* <div className="upload-post-actions"> */}
@@ -157,13 +155,14 @@ export default class AdminUpload extends React.Component{
                     <div id="upload-mobile">
                         {this.state.posts.map((post, index) => {
                             if(!loading){
+                                var datePosted = new Date(post.datePosted);
                                 return(
                                     <div className="post-mobile" key={index}>
                                         {post.content.length > 0 &&
                                             <img className="post-mobile-img" src={`${route_prefix}/content/${post.content[0]}`}/>
                                         }
                                         <span className="post-mobile-description">{post.description}</span>
-                                        <span className="post-mobile-date-posted">{post.datePosted}</span>
+                                        <span className="post-mobile-date-posted">{datePosted.getDate()+"/"+datePosted.getMonth()+"/"+datePosted.getFullYear()}</span>
                                         <Button className="post-mobile-date-edit" onClick={() => this.clickEditPost(post)} variant="dark"><FaRegEdit style={{marginLeft: '2px', marginBottom: '4px'}}/></Button>
                                     </div>
                                 )

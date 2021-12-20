@@ -1,6 +1,5 @@
 import React from 'react';
-import data from '../../config.json';
-const ROUTE_PREFIX = (data.DEVELOPMENT) ? data.DEVELOPMENT_ROUTE_PREFIX : '';
+import { route_prefix } from '../../utility';
 import { Modal, Button } from 'react-bootstrap';
 import CurrencyFormat from 'react-currency-format';
 
@@ -18,7 +17,7 @@ export default class TipModal extends React.Component {
 
     sendPayment(){
         var formData = `amount=${encodeURIComponent(this.state.amount)}&from=${this.props.from}&message=${this.state.message}`;
-        fetch(`${ROUTE_PREFIX}/payment/tip`, {
+        fetch(`${route_prefix}/payment/tip`, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: formData

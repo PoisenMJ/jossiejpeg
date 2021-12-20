@@ -2,11 +2,9 @@ import React from 'react';
 import "bootstrap/js/src/tab";
 import socketIOClient from 'socket.io-client';
 
-import data from '../../../config.json';
-const PREFIX = (data.DEVELOPMENT) ? data.DEVELOPMENT_ROUTE_PREFIX : "";
-const PORT = (data.DEVELOPMENT) ? data.DEVELOPMENT_PORT : "3000";
+import { route_prefix, port } from '../../../utility';
 import AdminNavigation from './AdminNavigation';
-const socket = socketIOClient("http://127.0.0.1:"+PORT);
+const socket = socketIOClient("http://127.0.0.1:"+port);
 
 import { useMediaQuery } from 'react-responsive';
 import { FaComments } from 'react-icons/fa';
@@ -32,7 +30,7 @@ export default class AdminMessages extends React.Component{
             unreadMessages: []
         }
         socket.on('chat message', data => {
-            fetch(`${PREFIX}/admin/check`, {
+            fetch(`${route_prefix}/admin/check`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({user: data.to})
@@ -63,7 +61,7 @@ export default class AdminMessages extends React.Component{
     }
 
     componentDidMount(){
-        fetch(`${PREFIX}/admin/message/ready`).then(res => res.json()).then(data => {
+        fetch(`${route_prefix}/admin/message/ready`).then(res => res.json()).then(data => {
             var content = JSON.parse(data.content);
             var names = Object.keys(content);
             let unreadMessages = [];
@@ -88,7 +86,7 @@ export default class AdminMessages extends React.Component{
     }
 
     onChange(newOpen){
-        fetch(`${PREFIX}/message/read`, {
+        fetch(`${route_prefix}/message/read`, {
             method: "POST",
             body: JSON.stringify({
                 user1: newOpen,
@@ -115,7 +113,7 @@ export default class AdminMessages extends React.Component{
 
     sendMessage(event){
         event.preventDefault();
-        fetch(`${PREFIX}/admin/message`, { 
+        fetch(`${route_prefix}/admin/message`, { 
             method: "POST",
             body: JSON.stringify({
                 content: this.state.messageContent,
@@ -155,7 +153,7 @@ export default class AdminMessages extends React.Component{
                         <div className="inbox nav flex-column" id="chat-inbox-navigation" role="tablist">
                             {names.length == 0 ?
                                 <div className="inbox-user-parent blur">
-                                    <img className="inbox-user-image" src={`${PREFIX}/content/users/default.jpg`}/>
+                                    <img className="inbox-user-image" src={`${route_prefix}/content/users/default.jpg`}/>
                                     <div className="inbox-user-details"><span className="inbox-user-name">John Doe</span>
                                     <span className="inbox-user-message">random new message information</span></div>
                                     <div className="inbox-user-date-read">
@@ -171,7 +169,7 @@ export default class AdminMessages extends React.Component{
                                 
                                 return(
                                     <div onClick={this.onChange.bind(this, name)} key={"inbox_"+name} className={classN} id={"inbox-user-"+(indx+1)} data-bs-toggle="tab" data-bs-target={"#chat-"+(indx+1)+"-box"} type="button" role="tab" aria-controls={"chat-"+indx+"-box"} aria-selected={(indx == 0 ? "true" : "false")}>
-                                        <img className="inbox-user-image" src={`${PREFIX}/content/users/${content[name][0].image}`}/>
+                                        <img className="inbox-user-image" src={`${route_prefix}/content/users/${content[name][0].image}`}/>
                                         <div className={(content[name].some(messages => messages.read == false))?"inbox-user-details fw-bold":"inbox-user-details"}><span className="inbox-user-name">{name}</span>
                                         <span className="inbox-user-message">{lastMsg}</span></div>
                                         <div className="inbox-user-date-read">
@@ -206,14 +204,14 @@ export default class AdminMessages extends React.Component{
                                                 msgContent = <span className={msgType+"-text-box"}>{message.content}</span>
                                             }
                                         } else {
-                                            <img className={msgType+"-image-content"} src={`${PREFIX}/content/${message.imageContent}`}/>;
+                                            <img className={msgType+"-image-content"} src={`${route_prefix}/content/${message.imageContent}`}/>;
                                         }
                                         let lastMessageID = (index2 == messages.length - 1) && this.state.currentlyOpen == this.state.names[index] ? "lastMessage": "";
                                         return (
                                             <div className={msgType+"-message message"} key={index2} id={lastMessageID}>
                                                 <span className={msgType+"-user"}>{message.from}</span>
                                                 <div className={msgType+"-message-content "+tipStyle}>
-                                                    <img className={msgType+"-user-img"} src={`${PREFIX}/content/users/${message.image}`}/>
+                                                    <img className={msgType+"-user-img"} src={`${route_prefix}/content/users/${message.image}`}/>
                                                     {msgContent}
                                                     <div className={msgType+"-info"}><span>{message.date}</span></div>
                                                 </div>
@@ -260,7 +258,7 @@ export default class AdminMessages extends React.Component{
 
                                 return(
                                     <div onClick={this.onChange.bind(this, name)} key={"inbox_"+name} className={classN} id={"inbox-user-"+(indx+1)} data-bs-toggle="tab" data-bs-target={"#chat-"+(indx+1)+"-box"} type="button" role="tab" aria-controls={"chat-"+indx+"-box"} aria-selected={(indx == 0 ? "true" : "false")}>
-                                        <img className="inbox-user-image" src={`${PREFIX}/content/users/${content[name][0].image}`}/>
+                                        <img className="inbox-user-image" src={`${route_prefix}/content/users/${content[name][0].image}`}/>
                                         <div className={(content[name].some(messages => messages.read == false))?"inbox-user-details fw-bold":"inbox-user-details"}><span className="inbox-user-name">{name}</span>
                                         <span className="inbox-user-message">{lastMsg}</span></div>
                                         <div className="inbox-user-date-read">
@@ -297,14 +295,14 @@ export default class AdminMessages extends React.Component{
                                                 }
 
                                             } else {
-                                                msgContent = <img className={msgType+"-image-content"} src={`${PREFIX}/content/${message.imageContent}`}/>;
+                                                msgContent = <img className={msgType+"-image-content"} src={`${route_prefix}/content/${message.imageContent}`}/>;
                                             }
                                             let lastMessageID = (index2 == messages.length - 1) && this.state.currentlyOpen == this.state.names[index] ? "lastMessage": "";
                                             return (
                                                 <div className={msgType+"-message message"} key={index2} id={lastMessageID}>
                                                     <span className={msgType+"-user"}>{message.from}</span>
                                                     <div className={msgType+"-message-content "+tipStyle+" "+msgColor}>
-                                                        <img className={msgType+"-user-img"} src={`${PREFIX}/content/users/${message.image}`}/>
+                                                        <img className={msgType+"-user-img"} src={`${route_prefix}/content/users/${message.image}`}/>
                                                         {msgContent}
                                                         <div className={msgType+"-info"}><span>{message.date}</span></div>
                                                     </div>

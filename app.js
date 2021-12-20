@@ -9,8 +9,8 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var session = require('express-session');
 var cors = require('cors');
+var process = require('process');
 
-var config = require('./config.json');
 require('./models/index');
 var User = require('./models/user');
 
@@ -42,7 +42,7 @@ app.use(express.static(path.join(__dirname, 'dist/static/js')));
 app.use(session({
   saveUninitialized: true,
   resave: false,
-  secret: config.sessionSecret
+  secret: process.env.SESSION_SECRET
 }))
 
 app.use(passport.initialize());

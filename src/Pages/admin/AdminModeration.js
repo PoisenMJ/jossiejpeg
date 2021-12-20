@@ -1,6 +1,6 @@
 import React from 'react';
 import AdminNavigation from './AdminNavigation';
-import route_prefix from '../../../utility';
+import { route_prefix } from '../../../utility';
 
 export default class AdminModeration extends React.Component{
     constructor(props){

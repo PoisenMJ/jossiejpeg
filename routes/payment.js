@@ -1,15 +1,29 @@
 const express = require('express');
 const router = express.Router();
-const config = require('../config.json');
-const stripe = require('stripe')(config.stripe.apiKey);
+var process = require('process');
+var data = require('../config.json');
+const stripe = require('stripe')(data.STRIPE_DEV_KEY);
 const subscription = require('../models/subscription');
-const development = config.DEVELOPMENT;
+const development = data.DEV;
 
 var Tip = require('../models/tip');
+
+function developmentAuth(req, res, next){
+    return next();
+}
+function isAuthenticated(req, res, next){
+    console.log('auth check');
+    if(!req.user) return res.redirect('/login');
+    next();
+}
+var authCheck = (development) ? developmentAuth : isAuthenticated;
 //
 // only allow access if logged in
 //
 
+router.get('/subscribe', authCheck, function(req, res, next) {
+    res.sendFile('dist/index.html', { root: process.cwd() });
+})
 
 router.post('/subscribe', async (req, res) => {
     const expiry = (development) ? ["04","24"] : req.body.expiry.split("/");
@@ -22,7 +36,7 @@ router.post('/subscribe', async (req, res) => {
             cvc: (development) ? "424" : req.body.cvc
         }
     });
-    const price = await stripe.prices.retrieve(config.stripe.priceID);
+    const price = await stripe.prices.retrieve(data.STRIPE_PRICE_ID);
     const customer = await stripe.customers.create({
         email: (development) ? "maksjl01@gmail.com" : req.body.email,
         payment_method: payment_method.id,
@@ -38,8 +52,9 @@ router.post('/subscribe', async (req, res) => {
     if(subscriptionResult.status == "active"){
         var d = new Date();
         var user = (development) ? 'maksjl01' : req.user.username;
-        var newUser = subscription.findOne({ user: user }, (err, returnUser) => {
+        subscription.findOne({ user: user }, (err, returnUser) => {
             // if return user RESUBSCRIBE
+            // date_subscribed: (date subbed, how many months subbed (starting from 0))
             if(returnUser){
                 if(!returnUser.active){
                     var updatedArray = returnUser.dates_subscribed.push([new Date(), 0]);
@@ -79,7 +94,8 @@ router.post('/subscribe', async (req, res) => {
         })
     } else {
         return res.json({
-            success: false
+            success: false,
+            message: "Payment Failed"
         });
     }
 });
@@ -120,37 +136,43 @@ router.post('/tip', async function(req, res, next) {
 
 router.post('/stripe/update-subscription', function(req, res, next) {
     const event = req.body;
-
     // handle event
     switch(event.type){
         //created an hour before being paid at renewal
         case 'invoice.created':
+            res.send();
             break;
-        //after subscription renewed1
+        //after subscription renewed
         case 'invoice.paid':
             const paidInvoice = event.data.object;
-            var customerID = paidInvoice.customer;
+            var customerID = (data.DEV) ? "cus_KlweqHhBmkWTId" : paidInvoice.customer;
             subscription.findOne({ customerID: customerID }, (err, sub) => {
                 if(err) console.log(err);
-                sub.updateUserActive(customerID);
+                if(sub) sub.updateUserActive(customerID);
+                else return res.json({ success: false });
+                return res.send();
             })
-            console.log(paidInvoice);
             break;
         case 'invoice.payment_failed':
             const failedInvoice = event.data.object;
             var customerID = failedInvoice;
             subscriptions.findOne({ customerID: customerID }, (err, sub) => {
                 if(err) console.log(err);
-                sub.updateUserUnactive(customerID);
+                if(sub){
+                    sub.updateUserUnactive(customerID);
+                } else {
+                    return res.json({ succes: false });
+                }
+                return res.send();
             })
-        default:
-            console.log('Unhandled event');
             break;
+        default:
+            return res.send();
     }
 });
 
 router.get('/stripe/get-default-payment-method', async function(req, res, next) {
-    var user = (config.DEVELOPMENT) ? "maksjl01" : req.user.username;
+    var user = (data.DEV) ? "maksjl01" : req.user.username;
     console.log(user);
     subscription.findOne({ user: user }, async (err, user) => {
         if(err) console.log(err);

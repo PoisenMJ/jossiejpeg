@@ -1,6 +1,6 @@
 import React from 'react';
-import route_prefix from '../../utility';
-import {flash} from 'react-universal-flash';
+import { route_prefix } from '../../utility';
+import { flash } from 'react-universal-flash';
 
 export default class CreateAccountBox extends React.Component{
     sendForm(event){

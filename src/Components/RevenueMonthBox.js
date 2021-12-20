@@ -3,8 +3,7 @@ import { Accordion } from 'react-bootstrap';
 import { ResponsiveContainer, Line, LineChart, Tooltip, XAxis, YAxis} from 'recharts';
 import { useAccordionButton } from 'react-bootstrap/AccordionButton';
 
-import data from '../../config.json';
-const PREFIX = (data.DEVELOPMENT) ? data.DEVELOPMENT_ROUTE_PREFIX : '';
+import { route_prefix } from '../../utility';
 const months = [ "January", "February", "March", "April", "May", "June", 
                 "July", "August", "September", "October", "November", "December" ];
 
@@ -31,7 +30,7 @@ export default class RevenueMonthBox extends React.Component{
             chartData: '',
             totals: {}
         }
-        fetch(`${PREFIX}/admin/stats/${this.props.year}/${this.props.month}`).then(raw => raw.json())
+        fetch(`${route_prefix}/admin/stats/${this.props.year}/${this.props.month}`).then(raw => raw.json())
         .then(data => {
             this.setState({ chartData: data.data, totals: data.totals });
         });

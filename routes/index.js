@@ -3,12 +3,12 @@ var process = require('process');
 const passport = require('passport');
 const Post = require('../models/post');
 const User = require('../models/user');
+const Sub = require('../models/subscription');
 const Message = require('../models/message');
-const {Comment} = require('../models/comment');
+const { Comment } = require('../models/comment');
 var io = require('socket.io')();
 var router = express.Router();
-var config = require('../config.json');
-var authCheck = (config.DEVELOPMENT) ? development : isAuthenticated;
+var data = require('../config.json');
 const crypto = require('crypto');
 
 
@@ -34,10 +34,10 @@ function isAuthenticated(req, res, next){
   if(!req.user) return res.redirect('/login');
   next();
 }
+var authCheck = (data.DEV) ? development : isAuthenticated;
 
 // TODO:
 // stop login if banned flash after ban
-// restrict post comments (double check)
 
 /* GET home page. */
 router.get('/login', function(req, res, next) {
@@ -50,7 +50,15 @@ router.post('/login', function(req, res, next) {
     if(!user) return res.redirect('/login?failure=true');
     req.login(user, (err) => {
       if(user.role == "admin") return res.redirect('/admin/upload');
-      else return res.redirect('/home'); 
+      else if(user.role == "user") {
+        Sub.findOne({ user: user.username }, (err, sub) => {
+          if(sub){
+            if(sub.active) return res.redirect('/home');
+            else if(!sub.active) return res.redirect('/payment/subscribe');
+          }
+          else return res.redirect('/payment/subscribe');
+        })
+      }
     })
   })(req, res, next);
 });
@@ -71,9 +79,14 @@ router.post('/create-account', (req, res, next) => {
   });
 });
 
-router.get('/signout', function (req, res, next){
-  
-})
+router.get('/signout', authCheck, function (req, res, next){
+  req.logout();
+  res.redirect('/login');
+});
+
+router.get('/gallery', authCheck, function(req, res, next) {
+  res.sendFile('dist/index.html', { root: process.cwd() });
+});
 
 // GET: POSTS
 // return all posts
@@ -81,7 +94,8 @@ router.get('/posts', authCheck, function(req, res, next) {
   Post.find({}, (err, posts) => {
     if(err) return err;
     for(let post in posts){
-      if(posts[post].likes.includes("maksjl01")) posts[post]._doc.liked = true;
+      let user = (data.DEV) ? data.DEV_TEST_USER : req.user.username;
+      if(posts[post].likes.includes(user)) posts[post]._doc.liked = true;
       else posts[post]._doc.liked = false;
     }
     console.log(posts);
@@ -94,8 +108,8 @@ router.get('/home', authCheck, function(req, res, next) {
 });
 router.post('/home/like', authCheck, function(req, res, next){
   var id = req.body.postID;
-  console.log(req.body);
-  Post.findOneAndUpdate({ _id: id }, { $addToSet: { likes: "maksjl01" }}, (err, post) => {
+  let user = (data.DEV) ? data.DEV_TEST_USER : req.user.username;
+  Post.findOneAndUpdate({ _id: id }, { $addToSet: { likes: user }}, (err, post) => {
     if(err) console.log(err);
     console.log(post);
     return res.json({ success: true });
@@ -103,8 +117,8 @@ router.post('/home/like', authCheck, function(req, res, next){
 });
 router.post('/home/unlike', authCheck, function(req, res, next) {
   var id = req.body.postID;
-  // chgange to req.user.username instead when not development
-  Post.findOneAndUpdate({ _id: id }, { $pull : { likes: "maksjl01"}}, (err, post) => {
+  let user = (data.DEV) ? data.DEV_TEST_USER : req.user.username;
+  Post.findOneAndUpdate({ _id: id }, { $pull : { likes: user}}, (err, post) => {
     if(err) console.log(err);
     console.log(post);
     return res.json({ success: true });
@@ -112,7 +126,7 @@ router.post('/home/unlike', authCheck, function(req, res, next) {
 });
 router.post('/home/comment', authCheck, function(req, res, next) {
   var id = req.body.postID, content = req.body.comment, date = new Date().toString();
-  var user = (development) ? "maksjl01" : req.user.username;
+  var user = (development) ? data.DEV_TEST_USER : req.user.username;
   var image = (development) ? "default.jpg" : req.user.image;
   
   Post.findOne({ _id: id }, (err, post) => {
@@ -148,24 +162,16 @@ router.post('/user/check', authCheck, function(req, res, next) {
 });
 
 router.get('/user', authCheck, function(req, res, next) {
-  // var user = (config.DEVELOPMENT) ?
-  // {"username": "maksjl01",
-  // "firstName": "Maks",
-  // "lastName": "lewis",
-  // "image": "default.jpg",
-  // "email": "maksjl01@gmail.com"} : req.user;
   User.findOne({ username: "maksjl01" }, (err, user) => {
-    if(config.DEVELOPMENT) return res.json(user);
+    if(data.DEV) return res.json(user);
     else return res.json(req.user);
-
   })
 })
 
 // GET: MESSAGES
 // return all messages from database for speicific use
 router.get('/messages', authCheck, function(req, res, next){
-  var user = (config.DEVELOPMENT) ? config.DEVELOPMENT_TEST_USER_USERNAME : req.user.username;
-  console.log('messages');
+  var user = (data.DEV) ? data.DEV_TEST_USER : req.user.username;
   Message.find({$or: [
     {from: user},
     {to: user}
@@ -191,8 +197,8 @@ router.get('/image', authCheck, function(req, res, next) {
 // POST: MESSAGE
 // add message to database and return it with style tag: "incoming"/"outgoing"
 router.post('/message', authCheck, upload.single('image'), function(req, res, next) {
-  var user = (config.DEVELOPMENT) ? config.DEVELOPMENT_TEST_USER_USERNAME : req.user.username;
-  var image = (config.DEVELOPMENT) ? "default.jpg" : req.user.image;
+  var user = (data.DEV) ? data.DEV_TEST_USER : req.user.username;
+  var image = (data.DEV) ? "default.jpg" : req.user.image;
   
   var d = new Date();
   var msgContent = (req.file) ? "" : req.body.content;
@@ -245,7 +251,7 @@ router.get('/email/check/:email', authCheck, function(req, res, next) {
 })
 
 router.post('/user/update',authCheck,upload.single('userImage'), async function (req, res, next) {
-  var username = (config.DEVELOPMENT) ? "maksjl01" : req.user.username;
+  var username = (data.DEV) ? data.DEV_TEST_USER : req.user.username;
   
   if(req.body.password){
     var hashed_password = crypto.createHash('md5').update(req.body.password).digest('hex');

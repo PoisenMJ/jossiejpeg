@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, Form, Button } from 'react-bootstrap';
-import route_prefix from '../../utility';
+import { route_prefix } from '../../utility';
 import {flash} from 'react-universal-flash';
 
 export default class EditPost extends React.Component{

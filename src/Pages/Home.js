@@ -1,6 +1,6 @@
 import React from 'react';
 import Navigation from './Navigation';
-import route_prefix from '../../utility';
+import { route_prefix } from '../../utility';
 import { FaMoneyBillWave, FaHeart, FaRegHeart } from 'react-icons/fa';
 import TipModal from '../Components/TipModal';
 import MessageFlash from '../Components/MessageFlash';
@@ -12,7 +12,7 @@ export default class Home extends React.Component{
         this.state = {
             posts: []
         }
-
+        console.log(route_prefix);
         fetch(`${route_prefix}/posts`, {
             method: "GET",
             headers: {

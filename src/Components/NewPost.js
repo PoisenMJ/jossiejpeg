@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, Form, Button } from 'react-bootstrap';
-import route_prefix from '../../utility';
+import { route_prefix } from '../../utility';
 
 export default class NewPost extends React.Component{
     constructor(props){

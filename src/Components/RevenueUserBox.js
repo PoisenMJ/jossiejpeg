@@ -1,8 +1,6 @@
 import React from 'react';
 import { ResponsiveContainer, Bar, BarChart, Tooltip, XAxis, YAxis, Legend } from 'recharts';
-
-import data from '../../config.json';
-const PREFIX = (data.DEVELOPMENT) ? data.DEVELOPMENT_ROUTE_PREFIX : '';
+import { route_prefix } from '../../utility';
 
 export default class RevenueUserBox extends React.Component{
     constructor(props){
@@ -15,7 +13,7 @@ export default class RevenueUserBox extends React.Component{
     }
 
     fetchTopTen(){
-        fetch(`${PREFIX}/admin/stats/top`).then(raw => raw.json()).then(data => {
+        fetch(`${route_prefix}/admin/stats/top`).then(raw => raw.json()).then(data => {
             var users = Object.values(data).map((e) => Object.values(e)[0]);
             this.setState({ chartData: data, users: users })
         })
