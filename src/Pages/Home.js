@@ -39,14 +39,14 @@ export default class Home extends React.Component{
                 <TipModal ref={this.tipModalRef} from="posts" onSuccess={this.onTipSent.bind(this)}/>
                 <MessageFlash ref={this.messageFlashRef} time={60} variant="success" message="hello"/>
                 <Navigation location="home"/>
-                {/* <button onClick={this.onShowAlertButtonClick}>alert</button> */}
                 <div className="posts">
                     {posts.map((post, index) => {
+                        var date = new Date(post.datePosted);
                         return(
                         <Post key={index}
                             index={index}
                             images={post.content}
-                            datePosted={post.datePosted}
+                            datePosted={date.getDate()+"/"+date.getMonth()+"/"+date.getFullYear()}
                             description={post.description}
                             tipClickCallback={this.onTipButtonClick}
                             postId={post._id}

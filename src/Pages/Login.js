@@ -24,11 +24,17 @@ export default class Login extends React.Component{
         this.setState({ createAccount: false });
     }
 
+
     login(){
         fetch(`${route_prefix}/submit-login`, {
             method: "POST",
             body: new FormData(document.getElementById("loginForm"))
         })
+    }
+
+    accountCreated(){
+        this.setState({ createAccount: false });
+        flash("Account Created", 10000, "green");
     }
 
     render(){
@@ -68,7 +74,7 @@ export default class Login extends React.Component{
                                     >Login</button>
                                 </form>
                                 :
-                                <CreateAccountBox/>
+                                <CreateAccountBox onCreate={this.accountCreated.bind(this)}/>
                             }
                         </div>
                         {!this.state.createAccount ?

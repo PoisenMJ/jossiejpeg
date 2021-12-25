@@ -1,5 +1,6 @@
 import React from "react";
 import { route_prefix } from '../../utility';
+import { Carousel } from 'react-bootstrap';
 
 import { FaMoneyBillWave, FaRegHeart, FaHeart, FaRegCommentAlt, FaArrowRight } from 'react-icons/fa';
 import CommentsBox from "./CommentsBox";
@@ -58,24 +59,16 @@ export default class Post extends React.Component{
 
     render(){
         var liked = this.state.liked;
-        var index = this.props.index;
         var images = this.props.images;
         var content = (images.map((image, index) => {
             if(index == 0){
-                return(<div key={index} className="carousel-item active">
+                return(<Carousel.Item key={index}>
                         <img className="post-image" src={`${route_prefix}/content/${image}`}/>
-                    </div>)
+                    </Carousel.Item>)
             } else {
-                return(<div key={index} className="carousel-item">
+                return(<Carousel.Item key={index}>
                         <img className="post-image" src={`${route_prefix}/content/${image}`}/>
-                    </div>)
-            }
-        }));
-        var indicators = (images.map((i, index) => {
-            if(index == 0){
-                return(<button key={"indicator"+index} className="active" type="button" data-bs-target={"#postCarousel"+index} data-bs-slide-to={index} aria-current="true"/>)
-            } else {
-                return(<button key={"indicator"+index} type="button" data-bs-target={"#postCarousel"+index} data-bs-slide-to={index}/>)
+                    </Carousel.Item>)
             }
         }));
         return(
@@ -84,8 +77,8 @@ export default class Post extends React.Component{
                     <div className="post-user">
                         <img className="post-user-image" src={`${route_prefix}/content/users/pfp.jpg`}/>
                         <div className="post-user-details">
-                            <span className="post-user-name">Jossie</span>
-                            <span className="post-user-username text-muted">@jossiejpeg</span>
+                            <span className="post-user-name">Jossi</span>
+                            <span className="post-user-username text-muted">@jossijpeg</span>
                         </div>
                     </div>
                     <span className="text-muted post-date">{this.props.datePosted}</span>
@@ -94,24 +87,7 @@ export default class Post extends React.Component{
                     </div>
                 </div>
                 <div className="post-description">{this.props.description}</div>
-                <div className="carousel carousel-dark slide" data-bs-ride="carousel" id={"postCarousel"+index}>
-                    <div className="carousel-indicators">
-                        {indicators}
-                    </div>
-                    <div className="carousel-inner">
-                        <div className="carousel">
-                            {content}
-                        </div>
-                    </div>
-                    <button className="carousel-control-prev" type="button" data-bs-target={"#postCarousel"+index} data-bs-slide="prev">
-                        <span className="carousel-control-prev-icon" aria-hidden="true"/>
-                        <span className="visually-hidden">Previous</span>
-                    </button>
-                    <button className="carousel-control-next" type="button" data-bs-target={"#postCarousel"+index} data-bs-slide="next">
-                        <span className="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span className="visually-hidden">Next</span>
-                    </button>
-                </div>
+                <Carousel>{content}</Carousel>
                 <div className="post-footer">
                     <div className="mb-2">
                         {!liked ? <FaRegHeart style={{marginBottom: '3px', marginRight: '3px', cursor: 'pointer'}} onClick={this.like.bind(this)}/>
@@ -122,7 +98,7 @@ export default class Post extends React.Component{
                     {this.props.restrictedComments ? '' :
                         <div className="post-comments">
                             <div className="input-group mb-3">
-                                <input type="text" value={this.state.comment} onChange={this.onCommentChange.bind(this)} className="form-control"></input>
+                                <input type="text" placeholder="Comment" value={this.state.comment} onChange={this.onCommentChange.bind(this)} className="form-control"></input>
                                 <button className="btn btn-secondary" onClick={this.comment.bind(this)}><FaArrowRight/></button>
                             </div>
                         </div>

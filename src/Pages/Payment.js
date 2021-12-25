@@ -70,7 +70,7 @@ export default class Payment extends React.Component{
                 <div className="container">
                     <div className="block-heading">
                     <h2>Payment</h2>
-                    <p>Subscribe to Jossie.JPEG, 1-Month Reaccuring Subscription</p>
+                    <p>Subscribe to Jossi.JPEG, 1-Month Reaccuring Subscription</p>
                     </div>
                     {/* <form onSubmit={this.handleSubmit.bind(this)}> */}
                     <form action={`${route_prefix}/payment/subscribe`} method="post">
@@ -78,7 +78,7 @@ export default class Payment extends React.Component{
                             <h3 className="title">Checkout</h3>
                             <div className="item">
                                 <span className="price">$12</span>
-                                <p className="item-name">Jossie Subscription</p>
+                                <p className="item-name">Jossi Subscription</p>
                                 <p className="item-description">1 Month</p>
                             </div>
                             <div className="total">Total<span className="price">$12</span></div>

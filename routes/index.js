@@ -10,6 +10,7 @@ var io = require('socket.io')();
 var router = express.Router();
 var data = require('../config.json');
 const crypto = require('crypto');
+const stripe = require('stripe')(data.STRIPE_DEV_KEY);
 
 
 var multer = require('multer');
@@ -30,7 +31,6 @@ function development(req, res, next){
   return next();
 }
 function isAuthenticated(req, res, next){
-  console.log('auth check');
   if(!req.user) return res.redirect('/login');
   next();
 }
@@ -41,10 +41,9 @@ var authCheck = (data.DEV) ? development : isAuthenticated;
 
 /* GET home page. */
 router.get('/login', function(req, res, next) {
-  res.render('login');
+  res.sendFile('dist/index.html', { root: process.cwd() });
 });
 router.post('/login', function(req, res, next) {
-  console.log('login');
   passport.authenticate('local', (err, user, info) => {
     if(err) return res.redirect('/login?failure=true');
     if(!user) return res.redirect('/login?failure=true');
@@ -64,19 +63,33 @@ router.post('/login', function(req, res, next) {
 });
 
 router.get('/create-account', (req, res, next) => {
-  res.render('create-account');
+  res.sendFile('dist/index.html', { root: process.cwd() });
 });
-router.post('/create-account', (req, res, next) => {
-  var newUser = new User({
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    email: req.body.email,
-    password: req.body.password
+router.post('/create-account', upload.any('content'), (req, res, next) => {
+  User.exists({ username: req.body.username }, (err, result) => {
+    if(err) return res.json({ success: false, message: "Username Unavailable" })
+    if(result) return res.json({ success: false, message: "Username Unavailable" })
+    else {
+      User.exists({ email: req.body.email }, (err, result) => {
+        if(err) return res.json({ success: false, message: "Failed" })
+        if(result) return res.json({ success: false, message: "Email Taken" })
+        else {
+          var newUser = new User({
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            email: req.body.email,
+            password: req.body.password,
+            username: req.body.username
+          });
+          newUser.save((err) => {
+            if(err) return res.json({ success: false, message: "Account Creation Failed" });
+            else return res.json({ success: true, message: "" });
+          });
+        }
+      });
+    }
   });
-  newUser.save((err) => {
-    console.log(err);
-    res.redirect('/login');
-  });
+
 });
 
 router.get('/signout', authCheck, function (req, res, next){
@@ -94,7 +107,7 @@ router.get('/posts', authCheck, function(req, res, next) {
   Post.find({}, (err, posts) => {
     if(err) return err;
     for(let post in posts){
-      let user = (data.DEV) ? data.DEV_TEST_USER : req.user.username;
+      let user = req.user.username;
       if(posts[post].likes.includes(user)) posts[post]._doc.liked = true;
       else posts[post]._doc.liked = false;
     }
@@ -108,7 +121,7 @@ router.get('/home', authCheck, function(req, res, next) {
 });
 router.post('/home/like', authCheck, function(req, res, next){
   var id = req.body.postID;
-  let user = (data.DEV) ? data.DEV_TEST_USER : req.user.username;
+  let user = req.user.username;
   Post.findOneAndUpdate({ _id: id }, { $addToSet: { likes: user }}, (err, post) => {
     if(err) console.log(err);
     console.log(post);
@@ -117,7 +130,7 @@ router.post('/home/like', authCheck, function(req, res, next){
 });
 router.post('/home/unlike', authCheck, function(req, res, next) {
   var id = req.body.postID;
-  let user = (data.DEV) ? data.DEV_TEST_USER : req.user.username;
+  let user = req.user.username;
   Post.findOneAndUpdate({ _id: id }, { $pull : { likes: user}}, (err, post) => {
     if(err) console.log(err);
     console.log(post);
@@ -126,8 +139,8 @@ router.post('/home/unlike', authCheck, function(req, res, next) {
 });
 router.post('/home/comment', authCheck, function(req, res, next) {
   var id = req.body.postID, content = req.body.comment, date = new Date().toString();
-  var user = (development) ? data.DEV_TEST_USER : req.user.username;
-  var image = (development) ? "default.jpg" : req.user.image;
+  var user = req.user.username;
+  var image = req.user.image;
   
   Post.findOne({ _id: id }, (err, post) => {
     if(post.restrictedComments == false){
@@ -162,16 +175,13 @@ router.post('/user/check', authCheck, function(req, res, next) {
 });
 
 router.get('/user', authCheck, function(req, res, next) {
-  User.findOne({ username: "maksjl01" }, (err, user) => {
-    if(data.DEV) return res.json(user);
-    else return res.json(req.user);
-  })
-})
+    return res.json(req.user);
+});
 
 // GET: MESSAGES
 // return all messages from database for speicific use
 router.get('/messages', authCheck, function(req, res, next){
-  var user = (data.DEV) ? data.DEV_TEST_USER : req.user.username;
+  var user = req.user.username;
   Message.find({$or: [
     {from: user},
     {to: user}
@@ -197,8 +207,8 @@ router.get('/image', authCheck, function(req, res, next) {
 // POST: MESSAGE
 // add message to database and return it with style tag: "incoming"/"outgoing"
 router.post('/message', authCheck, upload.single('image'), function(req, res, next) {
-  var user = (data.DEV) ? data.DEV_TEST_USER : req.user.username;
-  var image = (data.DEV) ? "default.jpg" : req.user.image;
+  var user = req.user.username;
+  var image = req.user.image;
   
   var d = new Date();
   var msgContent = (req.file) ? "" : req.body.content;
@@ -206,7 +216,7 @@ router.post('/message', authCheck, upload.single('image'), function(req, res, ne
   var msgObj = {
     content: msgContent,
     from: user,
-    to: 'jossiejpeg',
+    to: 'jossijpeg',
     type: msgType,
     imageContent: (req.file) ? req.file.filename : "",
     date: d.getHours() + ":" + d.getMinutes() + " " + d.getDate() + "/" + d.getMonth(),
@@ -232,27 +242,37 @@ router.post('/message/read', authCheck, function(req, res, next) {
   })
 });
 
-router.get('/username/check/:username', authCheck, function(req, res, next) {
-  var username = req.query.username;
-  User.find({ username: username }, (err, user) => {
-    console.log(user);
-    console.log(err);
-    if(err) res.json({ available: false });
-    else return res.json({ available: true });
-  })
-});
-
-router.get('/email/check/:email', authCheck, function(req, res, next) {
-  var email = req.query.email;
-  User.find({ email: email }, (err, user) => {
-    if(err) res.json({ available: false });
-    else return res.json({ available: true });
-  })
-})
-
 router.post('/user/update',authCheck,upload.single('userImage'), async function (req, res, next) {
-  var username = (data.DEV) ? data.DEV_TEST_USER : req.user.username;
-  
+  var username = req.user.username;
+  var newCard = false;
+  if(req.body.cardNumber){
+    const user = await Sub.findOne({ user: req.user.username });
+    if(user){
+      const customer = await stripe.customers.retrieve(user.customerID);
+      const expiry = req.body.expiry.split("/");
+      const new_payment_method = await stripe.paymentMethods.create({
+        type: 'card',
+        card: {
+          number: req.body.cardNumber,
+          exp_month: parseInt(expiry[0].trim()),
+          exp_year: parseInt(expiry[1].trim()),
+          cvc: req.body.cvc
+        },
+        billing_details: { name: req.body.cardHolder }
+      });
+      console.log(customer);
+      const attached = await stripe.paymentMethods.attach(
+        new_payment_method.id,
+        {customer: customer.id}
+      );
+      await stripe.customers.update(
+        customer.id,
+        { invoice_settings: { default_payment_method: new_payment_method.id }}
+      );
+      newCard = true;
+    } else return res.json({ success: false });
+  }
+
   if(req.body.password){
     var hashed_password = crypto.createHash('md5').update(req.body.password).digest('hex');
     var u = await User.updateOne({ username: username }, { $set: {
@@ -265,7 +285,7 @@ router.post('/user/update',authCheck,upload.single('userImage'), async function 
       image: filename
     }});
   }
-  return res.json({ success: true });
+  return res.json({ success: true, newCard });
 })
 
 // // GET /

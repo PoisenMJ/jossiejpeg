@@ -33,17 +33,11 @@ export default class Gallery extends React.Component {
         }
         else if(event.target.value == "date-latest"){
             var posts = this.state.posts;
-            for(let post in posts){
-                console.log(new Date(posts[post].datePosted));
-            }
             posts.sort((a, b) => {
                 var dateA = new Date(a.datePosted);
                 var dateB = new Date(b.datePosted);
                 return dateB - dateA;
             });
-            for(let post in posts){
-                console.log(posts[post]);
-            }
             this.setState({ posts });
         }
     }

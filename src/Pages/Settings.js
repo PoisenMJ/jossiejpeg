@@ -2,6 +2,7 @@ import React from "react";
 import { route_prefix } from "../../utility";
 import Navigation from "./Navigation";
 import { flash } from 'react-universal-flash';
+import { PaymentInputsContainer } from 'react-payment-inputs';
 
 export default class Settings extends React.Component{
     constructor(props){
@@ -9,11 +10,14 @@ export default class Settings extends React.Component{
         this.state = {
             username: '',
             image: '',
-            firstName: '',
-            lastName: '',
             newPasswordInput: '',
             newPasswordConfirmInput: '',
-            newImage: false
+            newImage: false,
+            newCardHolder: '',
+            newCardNumber: '',
+            newCVC: '',
+            newExpiry: '',
+            defaultCard: {}
         };
         this.getUserInfo();
         this.getDefaultCard();
@@ -25,7 +29,7 @@ export default class Settings extends React.Component{
         imageInput.onchange = () => {
             this.setState({
                 image: imageInput.files[0],
-                newImage: true
+                newImage: true,
             });
         }
     }
@@ -33,15 +37,10 @@ export default class Settings extends React.Component{
     getUserInfo(){
         fetch(`${route_prefix}/user`).then(raw => raw.json()).then(data => {
             // check if data status code 200
-            console.log(data);
             this.setState({
                 username: data.username,
                 image: data.image,
                 email: data.email,
-                firstName: data.firstName,
-                lastName: data.lastName,
-                cards: [],
-                defaultCard: {}
             })
         })
     }
@@ -77,6 +76,12 @@ export default class Settings extends React.Component{
         var formData = new FormData();
         if(this.state.newPasswordInput) formData.append("password", this.state.newPasswordInput);
         if(this.state.newImage) formData.append('userImage', this.state.image);
+        if(this.state.newCVC && this.state.newCardHolder && this.state.newExpiry && this.state.newCardNumber){
+            formData.append('cvc', this.state.newCVC);
+            formData.append('cardNumber', this.state.newCardNumber);
+            formData.append('expiry', this.state.newExpiry);
+            formData.append('cardHolder', this.state.newCardHolder);
+        }
 
         fetch(`${route_prefix}/user/update`, {
             method: "POST",
@@ -84,8 +89,14 @@ export default class Settings extends React.Component{
         }).then(raw => raw.json()).then(data => {
             if(data.success) flash("Updated", 10000, "green");
             else flash("Update Failed", 10000, "red");
+            if(data.newCard) this.getDefaultCard();
         })
     }
+
+    updateCardHolderInput(event){ this.setState({ newCardHolder: event.target.value })}
+    updateCardNumberInput(event){ this.setState({ newCardNumber: event.target.value })}
+    updateCVCInput(event){ this.setState({ newCVC: event.target.value })}
+    updateExpiryInput(event){ this.setState({ newExpiry: event.target.value })}
 
     render(){
         let imageURI = (this.state.newImage) ? URL.createObjectURL(this.state.image) : 
@@ -93,12 +104,13 @@ export default class Settings extends React.Component{
         let cardNumber = "•••• •••• •••• ••••";
         let cardExpiry = "--/--";
         let brand = "Brand";
-        if(this.state.defaultCard)
+        if(this.state.defaultCard){
             if(this.state.defaultCard.lastFour){
                 cardNumber = "•••• •••• •••• "+this.state.defaultCard.lastFour;
                 cardExpiry = this.state.defaultCard.exp_month+'/'+this.state.defaultCard.exp_year;
                 brand = this.state.defaultCard.brand;
             }
+        }
 
         return(
             <div id="parent">
@@ -159,6 +171,30 @@ export default class Settings extends React.Component{
                                             <span style={{float: 'right'}}>{cardExpiry}</span>
                                             <span id="default-card-brand">{brand}</span>
                                         </div>
+                                    </div>
+                                    <div className="row g-0 mt-4">
+                                        <span className="mb-1">Update Payment</span>
+                                        <PaymentInputsContainer>
+                                            {({ meta, getCardNumberProps, getExpiryDateProps, getCVCProps }) => (
+                                                <div>
+                                                    <div className="form-group col mb-2">
+                                                        <input onChange={this.updateCardHolderInput.bind(this)} name="cardholder" id="card-holder" type="text" className="form-control" placeholder="Card Holder" aria-label="Card Holder" aria-describedby="basic-addon1"/>
+                                                    </div>
+                                                    <div className="form-group col mb-2">
+                                                        <input className="form-control" {...getCardNumberProps({ onChange: this.updateCardNumberInput.bind(this) })} name="cardNumber" id="cardNumber" placeholder="0000 0000 0000 0000" value={this.state.cardNumber}/>
+                                                        {meta.isTouched && meta.error && <span>Error: {meta.error}</span>}
+                                                    </div>
+                                                    <div className="row g-2 p-0">
+                                                        <div className="col">
+                                                            <input {...getExpiryDateProps({ onChange: this.updateExpiryInput.bind(this) })} id="expire" name="expiry" type="text" className="form-control" placeholder="-- / --" aria-label="MM" aria-describedby="basic-addon1"/>
+                                                        </div>
+                                                        <div className="col">
+                                                            <input {...getCVCProps({ onChange: this.updateCVCInput.bind(this) })} name="cvc" id="cvc" type="text" className="form-control" placeholder="CVC" aria-label="Card Holder" aria-describedby="basic-addon1"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </PaymentInputsContainer>
                                     </div>
                                     <div className="mt-5 text-right">
                                         <button onClick={this.saveProfile.bind(this)} className="btn btn-primary profile-button" type="button">Save</button>

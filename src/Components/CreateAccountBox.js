@@ -16,24 +16,16 @@ export default class CreateAccountBox extends React.Component{
             if(!(p == cp)){
                 flash("Password don't match", 10000, "red");
             } else {
-                fetch(`${route_prefix}/username/check/${username}`)
-                .then(raw => raw.json()).then(data => {
-                    if(data.available){
-                        fetch(`${route_prefix}/email/check/${email}`)
-                        .then(raw => raw.json()).then(data => {
-                            if(data.available){
-                                fetch(`${route_prefix}/create-account`, {
-                                    method: "POST",
-                                    body: new FormData(document.getElementById("createAccountForm"))
-                                });
-                            } else {
-                                flash("Email not available", 10000, "red");
-                            }
-                        })
-                    } else {
-                        flash("Username not available", 10000, "red");
+                fetch(`${route_prefix}/create-account`, {
+                    method: "POST",
+                    body: new FormData(document.getElementById("createAccountForm"))
+                }).then(raw => raw.json()).then(data => {
+                    if(data.success){
+                        this.props.onCreate();
+                    } else if(!data.success) {
+                        flash(data.message, 10000, "red");
                     }
-                })
+                });
             }
         } else {
             flash("Fill out all fields", 10000, "red");
@@ -87,7 +79,7 @@ export default class CreateAccountBox extends React.Component{
                     placeholder="Confirm Password"
                     id="confirmPassword"
                 />
-                <button onClick={this.sendForm} className="btn btn-primary w-100">Create</button>
+                <button onClick={this.sendForm.bind(this)} className="btn btn-primary w-100">Create</button>
             </form>
         )
     }

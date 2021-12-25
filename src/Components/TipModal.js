@@ -21,10 +21,16 @@ export default class TipModal extends React.Component {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: formData
-        }).then(raw => raw.json()).then(data => {
-            console.log(data);
-            this.props.onSuccess(data);
-            this.setState({ show: false });
+        }).then(raw => {
+            if(raw.status == 401){
+                this.props.onFail();
+                this.setState({ show: false });
+            } else return raw.json()
+        }).then(data => {
+            if(data){
+                this.props.onSuccess(data);
+                this.setState({ show: false });
+            }
         })
     }
     openDialog(){ this.setState({ show: true })}

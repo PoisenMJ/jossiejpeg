@@ -90,7 +90,7 @@ export default class AdminMessages extends React.Component{
             method: "POST",
             body: JSON.stringify({
                 user1: newOpen,
-                user2: "jossiejpeg"
+                user2: "jossijpeg"
             }),
             headers: {
                 'Content-Type': "application/json"
@@ -188,7 +188,7 @@ export default class AdminMessages extends React.Component{
                                 <div key={"messages-user-"+index} className={classN} id={"chat-"+(index+1)+"-box"} role="tabpanel" aria-labelledby={"inbox-user-"+index}>
                                     <div className="admin-message-box">
                                     {messages.map((message, index2) => {
-                                        var msgType = (message.from == "jossiejpeg") ? "jossie-message outgoing" : "incoming";
+                                        var msgType = (message.from == "jossijpeg") ? "jossi-message outgoing" : "incoming";
                                         let msgContent;
                                         let tipStyle = (message.type =="tip") ? "tip":"";
                                         if (message.content){
@@ -277,8 +277,8 @@ export default class AdminMessages extends React.Component{
                                     <div key={"messages-user-"+index} className={classN} id={"chat-"+(index+1)+"-box"} role="tabpanel" aria-labelledby={"inbox-user-"+index}>
                                         <div className="admin-message-box">
                                         {messages.map((message, index2) => {
-                                            var msgType = (message.from == "jossiejpeg") ? "outgoing" : "incoming";
-                                            var msgColor = (message.from == "jossiejpeg")?"jossie-message":"";
+                                            var msgType = (message.from == "jossijpeg") ? "outgoing" : "incoming";
+                                            var msgColor = (message.from == "jossijpeg")?"jossi-message":"";
                                             var tipStyle = (message.type == "tip")?"tip":"";
                                             let msgContent;
                                             if (message.content){

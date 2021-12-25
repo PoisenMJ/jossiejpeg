@@ -1,10 +1,11 @@
 const mongoose = require('mongoose');
 const crypto = require('crypto');
-const uniqueKeyGen = require('mongoose-generate-unique-key');
+// const uniqueKeyGen = require('mongoose-generate-unique-key');
 
 const userSchema = new mongoose.Schema({
     email: {
         type: String,
+        unique: true
     },
     password: String,
     firstName: String,
@@ -17,10 +18,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         unique: true
     },
-    subscribed: {
-        type: Boolean,
-        default: false
-    },
+    // subscribed: {
+    //     type: Boolean,
+    //     default: false
+    // },
     image: {
         type: String,
         default: 'default.jpg',
@@ -48,7 +49,7 @@ userSchema.pre('save', function(next){
     user.password = hashedPassword;
     return next();
 });
-userSchema.plugin(uniqueKeyGen('username', () => String(Math.floor(Math.random() * 100000000)))) 
+// userSchema.plugin(uniqueKeyGen('username', () => String(Math.floor(Math.random() * 100000000)))) 
 
 const User = mongoose.model('user', userSchema);
 

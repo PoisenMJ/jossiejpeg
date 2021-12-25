@@ -115,17 +115,20 @@ export default class Messages extends React.Component{
             });
         })
     }
+    onTipFail(){
+        flash("Tip Failed", 10000, "red");
+    }
 
     render(){
         let messages = this.state.messages;
         return(
             <div id="parent">
-                <TipModal ref={this.tipModalRef} from={"messages"} onSuccess={this.onTipSent.bind(this)}/>
+                <TipModal ref={this.tipModalRef} from={"messages"} onSuccess={this.onTipSent.bind(this)} onFail={this.onTipFail}/>
                 {/* <div onClick={() => flash("Hey there we logged in and its all working", 10000, "green")}>Click for hello</div> */}
                 <Navigation location="message" headerContent={
                     (<div className="header-content">
                         <img className="header-profile-image" src={`${route_prefix}/content/users/pfp.jpg`}/>
-                        <span className="fw-normal fs-4">Jossie.JPEG</span>
+                        <span className="fw-normal fs-4">Jossi.JPEG</span>
                     </div>)
                 } headerActions={(
                     <div className="header-actions">
@@ -138,8 +141,8 @@ export default class Messages extends React.Component{
                 <div className="messaging">
                     <div className="message-box">
                         {messages.map((message, index) => {
-                            let style = (message.from == "jossiejpeg") ? "incoming" : "outgoing";
-                            let msgColor = (message.from == "jossiejpeg")?"jossie-message":"";
+                            let style = (message.from == "jossijpeg") ? "incoming" : "outgoing";
+                            let msgColor = (message.from == "jossijpeg")?"jossi-message":"";
                             let tipStyle = (message.type == "tip") ? "tip" : "";
                             let content;
                             if(message.type == "message"){

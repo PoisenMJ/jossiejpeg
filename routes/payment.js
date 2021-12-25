@@ -7,6 +7,7 @@ const subscription = require('../models/subscription');
 const development = data.DEV;
 
 var Tip = require('../models/tip');
+const User = require('../models/user');
 
 function developmentAuth(req, res, next){
     return next();
@@ -48,11 +49,9 @@ router.post('/subscribe', async (req, res) => {
             price: price.id
         }],
     });
-    
     if(subscriptionResult.status == "active"){
         var d = new Date();
-        var user = (development) ? 'maksjl01' : req.user.username;
-        subscription.findOne({ user: user }, (err, returnUser) => {
+        subscription.findOne({ user: req.user.username }, (err, returnUser) => {
             // if return user RESUBSCRIBE
             // date_subscribed: (date subbed, how many months subbed (starting from 0))
             if(returnUser){
@@ -65,8 +64,8 @@ router.post('/subscribe', async (req, res) => {
                             customerID: customer.id,
                             subscriptionID: subscriptionResult.id,
                             expires_in: subscriptionResult.current_period_end
-                    }
-                        }, (err) => console.log);
+                        }
+                    }, (err) => console.log);
                 } else {
                     return res.redirect('/login');
                 }
@@ -74,12 +73,13 @@ router.post('/subscribe', async (req, res) => {
                 var sub = new subscription({
                     customerID: customer.id,
                     subscriptionID: subscriptionResult.id,
-                    user: user,
+                    user: req.user.username,
                     expires_in: subscriptionResult.current_period_end,
-                    dates_subscribed: [[d, 0]],
+                    dates_subscribed: [[d, 1]],
                     price: price.unit_amount,
                     active: true
                 });
+                User.updateOne({ username: req.user.username }, {$set:{customerID: customer.id}});
                 sub.save((err, sub) => {
                     if(err){
                         if(err) console.log(err);
@@ -108,28 +108,31 @@ router.post('/tip', async function(req, res, next) {
 
     subscription.findOne({user: user}, async (err, sub) => {
         if(err) return err;
-        customerID = sub.customerID;
-        console.log("Customer ID: " + customerID);
-        var customer = await stripe.customers.retrieve(customerID);
-        var paymentIntent = await stripe.paymentIntents.create({
-            amount: amount*100,
-            currency: 'usd',
-            confirm: true,
-            customer: sub.customerID,
-            payment_method: customer.invoice_settings.default_payment_method,
-        });
-        console.log(paymentIntent);
-        if(paymentIntent.status == 'succeeded'){
-            var newTip = new Tip({
-                amount: amount,
-                message: message,
-                from: from,
-                user: user,
-                date: date
+        if(sub.customerID){
+            customerID = sub.customerID;
+            var customer = await stripe.customers.retrieve(customerID);
+            var paymentIntent = await stripe.paymentIntents.create({
+                amount: amount*100,
+                currency: 'usd',
+                confirm: true,
+                customer: sub.customerID,
+                payment_method: customer.invoice_settings.default_payment_method,
             });
-            newTip.save((err) => {
-                return res.json(newTip);
-            });
+            console.log(paymentIntent);
+            if(paymentIntent.status == 'succeeded'){
+                var newTip = new Tip({
+                    amount: amount,
+                    message: message,
+                    from: from,
+                    user: user,
+                    date: date
+                });
+                newTip.save((err) => {
+                    return res.json(newTip);
+                });
+            }
+        } else {
+            return res.status(401).json({ success: false });
         }
     });
 });
@@ -172,21 +175,21 @@ router.post('/stripe/update-subscription', function(req, res, next) {
 });
 
 router.get('/stripe/get-default-payment-method', async function(req, res, next) {
-    var user = (data.DEV) ? "maksjl01" : req.user.username;
-    console.log(user);
-    subscription.findOne({ user: user }, async (err, user) => {
+    subscription.findOne({ user: req.user.username }, async (err, user) => {
         if(err) console.log(err);
-        const customer = await stripe.customers.retrieve(user.customerID);
-        const payment_method = await stripe.paymentMethods.retrieve(customer.invoice_settings.default_payment_method);
-        console.log(payment_method);
-        var year = payment_method.card.exp_year.toString();
-        var month = payment_method.card.exp_month.toString();
-        return res.json({
-            lastFour: payment_method.card.last4,
-            exp_year: year.substr(year.length-2),
-            exp_month: (month.length == 1) ? "0"+month : month,
-            brand: payment_method.card.brand
-        })
+        if(user.customerID){
+            const customer = await stripe.customers.retrieve(user.customerID);
+            const payment_method = await stripe.paymentMethods.retrieve(customer.invoice_settings.default_payment_method);
+            var year = payment_method.card.exp_year.toString();
+            var month = payment_method.card.exp_month.toString();
+            
+            return res.json({
+                lastFour: payment_method.card.last4,
+                exp_year: year.substr(year.length-2),
+                exp_month: (month.length == 1) ? "0"+month : month,
+                brand: payment_method.card.brand
+            })
+        } else return res.json({ success: false });
     })
 })
 

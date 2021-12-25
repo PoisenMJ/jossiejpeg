@@ -90,7 +90,7 @@ router.post('/message', adminCheck, function(req, res, next) {
     var d = new Date();
     var msgObj = {
         content: req.body.content, 
-        from: 'jossiejpeg',
+        from: 'jossijpeg',
         to: req.body.to,
         date: d.getHours()+":"+d.getMinutes()+" "+d.getDate()+"/"+d.getMonth(),
         image: "pfp.jpg",
@@ -107,12 +107,12 @@ router.post('/message', adminCheck, function(req, res, next) {
 
 router.get('/message/ready', adminCheck, function(req, res, next) {
     Message.find({$or: [
-        { user: 'jossiejpeg' },
-        { to: 'jossiejpeg' }
+        { user: 'jossijpeg' },
+        { to: 'jossijpeg' }
     ]}, (err, messages) => {
     var m = {};
     for(var i = 0; i < messages.length; i++){
-        var curr = messages[i].from == 'jossiejpeg' ? messages[i].to : messages[i].from;
+        var curr = messages[i].from == 'jossijpeg' ? messages[i].to : messages[i].from;
         if(!m[curr]){
             m[curr] = []
             m[curr].push({

@@ -24,7 +24,7 @@ const closeButtonStyle = {
 }
 
 export default function Message ({type,content,deleteFlash}){
-    const style =  ((type === "green")||(type === "success")) ? {...messageBarStyle,"backgroundColor":"#adb5bd"}:messageBarStyle;
+    const style =  ((type === "green")||(type === "success")) ? {...messageBarStyle,"backgroundColor":"#198754"}:messageBarStyle;
     return(<div style={ style } >
         {content}
         <span style={closeButtonStyle} onClick={deleteFlash}>&times;</span>

@@ -50,7 +50,7 @@ export default class Navigation extends React.Component{
                         <div>
                             <a href="#" className="nav_logo">
                                 <FaSmile className="nav_logo-icon"/>
-                                <span className="nav_logo-name">Jossie.JPEG</span>
+                                <span className="nav_logo-name">Jossi.JPEG</span>
                             </a>
                             <div className="nav_list">
                                 <a href="/home" className={this.getClass("home")}>

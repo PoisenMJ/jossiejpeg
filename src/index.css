@@ -168,7 +168,7 @@ a {text-decoration: none}
     .inbox-user-parent{height:auto!important;padding: .5rem;}
     .admin-messaging{height: 100%!important;}
     .send-message{padding: 0!important;}
-    .inbox-user-image{width: 60%!important;padding: .2rem;}
+    .inbox-user-image{width: 50px!important;height:50px!important;object-fit:cover;padding: .2rem;}
     .inbox-user-parent.active{background-color: rgb(230,230,230)!important;}
     .incoming-message{width: 75%!important;}
     .outgoing-message{width: 75%!important;}
@@ -278,7 +278,7 @@ a {text-decoration: none}
 .inbox-user-parent:hover{background-color: rgb(233, 233, 233);}
 .inbox-user-image{
     grid-area: image;
-    width: 70%;
+    height: 70%;
     border-radius: 50%;
     align-self: center;
     justify-self: center;
@@ -327,7 +327,7 @@ a {text-decoration: none}
     flex-direction: column;
     border-radius: .4rem;
 }
-.jossie-message{
+.jossi-message{
     background-color: pink!important;
 }
 .tip, .tip *{
