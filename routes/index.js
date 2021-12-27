@@ -11,18 +11,24 @@ var router = express.Router();
 var data = require('../config.json');
 const crypto = require('crypto');
 const stripe = require('stripe')(data.STRIPE_DEV_KEY);
-
+const fs = require('fs');
 
 var multer = require('multer');
+const path = require('path');
+
 var storage = multer.diskStorage({
   destination: (req, file, cb) => {
     if(file.fieldname == "userImage") cb(null, './content/users');
     else cb(null, './content');
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = '-' + Date.now() + '-' + Math.round(Math.random()*1E9)+'.';
-    console.log(file);
-    cb(null, file.fieldname+uniqueSuffix+(file.mimetype.split('/')[1]));
+    if(file.fieldname == "userImage"){
+      cb(null, req.user.username+'.'+(file.mimetype.split('/')[1]));
+    } else {
+      const uniqueSuffix = '-' + Date.now() + '-' + Math.round(Math.random()*1E9)+'.';
+      console.log(file);
+      cb(null, file.fieldname+uniqueSuffix+(file.mimetype.split('/')[1]));
+    }
   }
 })
 var upload = multer({ storage: storage });
@@ -100,6 +106,10 @@ router.get('/signout', authCheck, function (req, res, next){
 router.get('/gallery', authCheck, function(req, res, next) {
   res.sendFile('dist/index.html', { root: process.cwd() });
 });
+
+router.get('/settings', authCheck, function(req, res, next) {
+  res.sendFile('dist/index.html', { root: process.cwd() });
+})
 
 // GET: POSTS
 // return all posts
@@ -187,7 +197,6 @@ router.get('/messages', authCheck, function(req, res, next){
     {to: user}
   ]}, (err, messages) => {
     if(err) return err;
-    console.log(messages);
     return res.json({ messages: messages });
   })
 });
@@ -222,7 +231,7 @@ router.post('/message', authCheck, upload.single('image'), function(req, res, ne
     date: d.getHours() + ":" + d.getMinutes() + " " + d.getDate() + "/" + d.getMonth(),
     image: image
   }
-  console.log(msgObj);
+  
   var msg = new Message(msgObj);
   io.emit('chat message', req.body.content);
   msg.save((err) => {
@@ -260,7 +269,7 @@ router.post('/user/update',authCheck,upload.single('userImage'), async function 
         },
         billing_details: { name: req.body.cardHolder }
       });
-      console.log(customer);
+
       const attached = await stripe.paymentMethods.attach(
         new_payment_method.id,
         {customer: customer.id}
@@ -281,6 +290,7 @@ router.post('/user/update',authCheck,upload.single('userImage'), async function 
   }
   if(req.file){
     var filename = req.file.filename;
+    var user = await User.findOne({ username: username });
     var u = await User.updateOne({ username: username}, { $set: {
       image: filename
     }});

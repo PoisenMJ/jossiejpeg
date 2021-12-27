@@ -169,7 +169,7 @@ a {text-decoration: none}
     .admin-messaging{height: 100%!important;}
     .send-message{padding: 0!important;}
     .inbox-user-image{width: 50px!important;height:50px!important;object-fit:cover;padding: .2rem;}
-    .inbox-user-parent.active{background-color: rgb(230,230,230)!important;}
+    .inbox-user-parent.active{background-color: #f5b7c2!important;}
     .incoming-message{width: 75%!important;}
     .outgoing-message{width: 75%!important;}
     .outgoing-message-content{grid-template-columns: 70% auto auto!important;}
@@ -256,7 +256,7 @@ a {text-decoration: none}
     width: 100%;
     height: calc(100vh - var(--header-height) - 1rem);
 }
-.inbox-user-parent.active{background-color: rgb(241, 241, 241);}
+.inbox-user-parent.active{background-color: rgb(177, 102, 173);}
 .inbox-user-parent.blur {filter: blur(2px); }
 .inbox-user-parent{
     display: grid;
@@ -275,7 +275,7 @@ a {text-decoration: none}
     place-self:center;
     padding: 1.5rem;
 }
-.inbox-user-parent:hover{background-color: rgb(233, 233, 233);}
+.inbox-user-parent:hover{ background-color: #f5b3be; }
 .inbox-user-image{
     grid-area: image;
     height: 70%;
@@ -392,6 +392,7 @@ a {text-decoration: none}
     align-self: start;
     justify-self: center;
     margin: 5px;
+    object-fit: cover;
 }
 .outgoing-user-img{
     height: 30px;
@@ -401,6 +402,7 @@ a {text-decoration: none}
     align-self: start;
     justify-self: center;
     margin: 5px;
+    object-fit: cover;
 }
 .incoming-text-box{
     grid-area: message;

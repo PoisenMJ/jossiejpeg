@@ -100,7 +100,7 @@ export default class AdminMessages extends React.Component{
             for(var i = 0; i < c[newOpen].length; i++){
                 c[newOpen][i].read = true;
             }
-            console.log(this.state);
+            this.showInbox();
             this.setState({currentlyOpen: newOpen, current: c}, () => {
                 this.scrollToLastMessage();
             });

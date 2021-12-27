@@ -71,7 +71,7 @@ export default class Navigation extends React.Component{
                                 </a>
                             </div>
                         </div>
-                        <a href="#" className="nav_link">
+                        <a href="/signout" className="nav_link">
                             <FaSignOutAlt/>
                             <span className="nav_name">Log Out</span>
                         </a>

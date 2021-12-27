@@ -103,7 +103,7 @@ router.post('/subscribe', async (req, res) => {
 router.post('/tip', async function(req, res, next) {
     var date = new Date();
     var amount = req.body.amount, from = req.body.from, message = req.body.message,
-        user = (development) ? "maksjl01" : req.user.username,
+        user = req.user.username,
         customerID;
 
     subscription.findOne({user: user}, async (err, sub) => {
@@ -176,7 +176,7 @@ router.post('/stripe/update-subscription', function(req, res, next) {
 
 router.get('/stripe/get-default-payment-method', async function(req, res, next) {
     subscription.findOne({ user: req.user.username }, async (err, user) => {
-        if(err) console.log(err);
+        if(err) return res.json({ success: false });
         if(user.customerID){
             const customer = await stripe.customers.retrieve(user.customerID);
             const payment_method = await stripe.paymentMethods.retrieve(customer.invoice_settings.default_payment_method);
